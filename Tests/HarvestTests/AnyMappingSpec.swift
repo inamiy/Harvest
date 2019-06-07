@@ -1,0 +1,65 @@
+import Combine
+import Harvest
+import Quick
+import Nimble
+
+/// Tests for `anyState`/`anyInput` (predicate functions).
+class AnyMappingSpec: QuickSpec
+{
+    override func spec()
+    {
+        typealias Harvester = Harvest.Harvester<MyState, MyInput>
+
+        let inputs = PassthroughSubject<MyInput, Never>()
+        var harvester: Harvester!
+        var lastReply: Reply<MyState, MyInput>?
+
+        describe("`anyState`/`anyInput` mapping") {
+
+            beforeEach {
+                let mappings: [Harvester.Mapping] = [
+                    .input0 | any => .state1,
+                    any     | .state1 => .state2
+                ]
+
+                harvester = Harvester(state: .state0, inputs: inputs, mapping: reduce(mappings))
+
+                _ = harvester.replies.sink { reply in
+                    lastReply = reply
+                }
+
+                lastReply = nil
+            }
+
+            it("`anyState`/`anyInput` succeeds") {
+                expect(harvester.state.value) == .state0
+                expect(lastReply).to(beNil())
+
+                // try any input (fails)
+                inputs.send(.input2)
+
+                expect(lastReply?.input) == .input2
+                expect(lastReply?.fromState) == .state0
+                expect(lastReply?.toState).to(beNil())
+                expect(harvester.state.value) == .state0
+
+                // try `.login` from any state
+                inputs.send(.input0)
+
+                expect(lastReply?.input) == .input0
+                expect(lastReply?.fromState) == .state0
+                expect(lastReply?.toState) == .state1
+                expect(harvester.state.value) == .state1
+
+                // try any input
+                inputs.send(.input2)
+
+                expect(lastReply?.input) == .input2
+                expect(lastReply?.fromState) == .state1
+                expect(lastReply?.toState) == .state2
+                expect(harvester.state.value) == .state2
+            }
+
+        }
+    }
+}
