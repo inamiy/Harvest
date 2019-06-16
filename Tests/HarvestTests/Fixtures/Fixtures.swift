@@ -68,3 +68,17 @@ extension TestScheduler
         // do nothing
     }
 }
+
+extension Subscribers.Completion: Equatable where Failure: Equatable
+{
+    public static func == (lhs: Subscribers.Completion<Failure>, rhs: Subscribers.Completion<Failure>) -> Bool {
+        switch (lhs, rhs) {
+        case (.finished, .finished):
+            return true
+        case let (.failure(l), .failure(r)):
+            return l == r
+        default:
+            return false
+        }
+    }
+}
