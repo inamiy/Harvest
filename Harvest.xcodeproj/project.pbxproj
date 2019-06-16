@@ -49,6 +49,7 @@
 		1F2F095922A8DE4E00DF6215 /* Reply.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reply.swift; sourceTree = "<group>"; };
 		1F2F095B22A8DE6700DF6215 /* CancelBag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelBag.swift; sourceTree = "<group>"; };
 		1F2F095D22A8E71100DF6215 /* Property.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Property.swift; sourceTree = "<group>"; };
+		1F509F2E22B5D96F00C1F6AF /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		1F76B77522A8FDAD003AA7B8 /* CombineExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombineExtensions.swift; sourceTree = "<group>"; };
 		1FAEF3FC22A8B51900368345 /* Harvest.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Harvest.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FAEF40522A8B51900368345 /* HarvestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HarvestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,6 +99,7 @@
 		1FAEF3F222A8B51900368345 = {
 			isa = PBXGroup;
 			children = (
+				1F509F2E22B5D96F00C1F6AF /* Package.swift */,
 				1FAEF41622A8B56000368345 /* Sources */,
 				1FAEF41A22A8B56900368345 /* Tests */,
 				1F2F092022A8B63200DF6215 /* Info.plist */,
