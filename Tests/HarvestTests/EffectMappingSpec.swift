@@ -9,7 +9,7 @@ class EffectMappingSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<AuthState, AuthInput>
-        typealias EffectMapping = Harvester.EffectMapping
+        typealias EffectMapping = Harvester.EffectMapping<Never>
 
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester!
@@ -33,7 +33,7 @@ class EffectMappingSpec: QuickSpec
                         .delay(for: 1, scheduler: testScheduler!)
                         .eraseToAnyPublisher()
 
-                let mappings: [Harvester.EffectMapping] = [
+                let mappings: [EffectMapping] = [
                     .login    | .loggedOut  => .loggingIn  | loginOKPublisher,
                     .loginOK  | .loggingIn  => .loggedIn   | .empty,
                     .logout   | .loggedIn   => .loggingOut | logoutOKPublisher,
@@ -108,13 +108,13 @@ class EffectMappingSpec: QuickSpec
                 let mapping: EffectMapping = { fromState, input in
                     switch (fromState, input) {
                         case (.loggedOut, .login):
-                            return (.loggingIn, loginOKPublisher)
+                            return (.loggingIn, .init(loginOKPublisher))
                         case (.loggingIn, .loginOK):
-                            return (.loggedIn, .empty)
+                            return (.loggedIn, nil)
                         case (.loggedIn, .logout):
-                            return (.loggingOut, logoutOKPublisher)
+                            return (.loggingOut, .init(logoutOKPublisher))
                         case (.loggingOut, .logoutOK):
-                            return (.loggedOut, .empty)
+                            return (.loggedOut, nil)
                         default:
                             return nil
                     }
@@ -190,7 +190,7 @@ class EffectMappingSpec: QuickSpec
                     }
                         .eraseToAnyPublisher()
 
-                let mappings: [Harvester.EffectMapping] = [
+                let mappings: [EffectMapping] = [
                     .login    | .loggedOut  => .loggingIn  | loginOKPublisher,
                     .loginOK  | .loggingIn  => .loggedIn   | .empty,
                 ]

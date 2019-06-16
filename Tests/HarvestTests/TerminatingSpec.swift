@@ -8,7 +8,7 @@ class TerminatingSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<MyState, MyInput>
-        typealias Mapping = Harvester.Mapping
+        typealias EffectMapping = Harvester.EffectMapping<Never>
 
         var harvester: Harvester!
         var lastReply: Reply<MyState, MyInput>?
@@ -25,7 +25,7 @@ class TerminatingSpec: QuickSpec
             beforeEach {
                 testScheduler = TestScheduler()
 
-                let sendInput1And2AfterDelay = Publishers.Just(MyInput.input1)
+                let sendInput1And2AfterDelay: AnyPublisher<MyInput, Never> = Publishers.Just(MyInput.input1)
                     .delay(for: 1, scheduler: testScheduler)
                     .append(
                         Publishers.Just(MyInput.input1)
@@ -33,7 +33,7 @@ class TerminatingSpec: QuickSpec
                     )
                     .eraseToAnyPublisher()
 
-                let mappings: [Harvester.EffectMapping] = [
+                let mappings: [EffectMapping] = [
                     .input0 | .state0 => .state1 | sendInput1And2AfterDelay,
                     .input1 | .state1 => .state2 | .empty,
                     .input2 | .state2 => .state0 | .empty
@@ -68,7 +68,7 @@ class TerminatingSpec: QuickSpec
 
                     expect(weakHarvester).to(beNil())
                     expect(lastReply).to(beNil())
-                    expect(lastRepliesCompletion).toNot(beNil())
+                    expect(lastRepliesCompletion) == .finished
                 }
 
                 /// - Todo: TestScheduler

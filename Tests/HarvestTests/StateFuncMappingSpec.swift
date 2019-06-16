@@ -11,13 +11,13 @@ class StateFuncMappingSpec: QuickSpec
         describe("State-change function mapping") {
 
             typealias Harvester = Harvest.Harvester<CountState, CountInput>
-            typealias EffectMapping = Harvester.EffectMapping
+            typealias EffectMapping = Harvester.EffectMapping<Never>
 
             let inputs = PassthroughSubject<CountInput, Never>()
             var harvester: Harvester!
 
             beforeEach {
-                var mappings: [Harvester.EffectMapping] = [
+                var mappings: [EffectMapping] = [
                     .increment | { $0 + 1 } | .empty
                     // Comment-Out: Type inference is super slow in Swift 4.2... (use `+=` instead)
 //                    .decrement | { $0 - 1 } | .empty()

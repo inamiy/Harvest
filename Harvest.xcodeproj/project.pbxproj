@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F1673B522B68E720008E627 /* Harvester+Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F1673B422B68E720008E627 /* Harvester+Feedback.swift */; };
+		1F1673B722B694650008E627 /* FlattenStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F1673B622B694650008E627 /* FlattenStrategy.swift */; };
+		1F1673BC22B6991E0008E627 /* FeedbackSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F1673B922B6991D0008E627 /* FeedbackSpec.swift */; };
+		1F1673BD22B6991E0008E627 /* EffectMappingLatestSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F1673BA22B6991D0008E627 /* EffectMappingLatestSpec.swift */; };
 		1F2F092222A8CCCB00DF6215 /* Mapping+Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2F092122A8CCCB00DF6215 /* Mapping+Helper.swift */; };
 		1F2F094322A8D0D900DF6215 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F2F094222A8D0D900DF6215 /* Quick.framework */; };
 		1F2F094522A8D0F200DF6215 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F2F094422A8D0F200DF6215 /* Nimble.framework */; };
@@ -16,6 +20,9 @@
 		1F2F095A22A8DE4E00DF6215 /* Reply.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2F095922A8DE4E00DF6215 /* Reply.swift */; };
 		1F2F095C22A8DE6700DF6215 /* CancelBag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2F095B22A8DE6700DF6215 /* CancelBag.swift */; };
 		1F2F095E22A8E71100DF6215 /* Property.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2F095D22A8E71100DF6215 /* Property.swift */; };
+		1F509F3122B5DFDC00C1F6AF /* Effect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F509F2F22B5DFDC00C1F6AF /* Effect.swift */; };
+		1F509F3222B5DFDC00C1F6AF /* EffectQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F509F3022B5DFDC00C1F6AF /* EffectQueue.swift */; };
+		1F509F3422B5DFFB00C1F6AF /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F509F3322B5DFFB00C1F6AF /* Feedback.swift */; };
 		1F76B77422A8EEA3003AA7B8 /* EffectMappingSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2F094822A8D12E00DF6215 /* EffectMappingSpec.swift */; };
 		1F76B77622A8FDAD003AA7B8 /* CombineExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F76B77522A8FDAD003AA7B8 /* CombineExtensions.swift */; };
 		1F76B77722A90188003AA7B8 /* AnyMappingSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2F094C22A8D12F00DF6215 /* AnyMappingSpec.swift */; };
@@ -36,6 +43,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1F1673B422B68E720008E627 /* Harvester+Feedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Harvester+Feedback.swift"; sourceTree = "<group>"; };
+		1F1673B622B694650008E627 /* FlattenStrategy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlattenStrategy.swift; sourceTree = "<group>"; };
+		1F1673B922B6991D0008E627 /* FeedbackSpec.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedbackSpec.swift; sourceTree = "<group>"; };
+		1F1673BA22B6991D0008E627 /* EffectMappingLatestSpec.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectMappingLatestSpec.swift; sourceTree = "<group>"; };
 		1F2F092022A8B63200DF6215 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1F2F092122A8CCCB00DF6215 /* Mapping+Helper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Mapping+Helper.swift"; sourceTree = "<group>"; };
 		1F2F094222A8D0D900DF6215 /* Quick.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Quick.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -50,6 +61,9 @@
 		1F2F095B22A8DE6700DF6215 /* CancelBag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelBag.swift; sourceTree = "<group>"; };
 		1F2F095D22A8E71100DF6215 /* Property.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Property.swift; sourceTree = "<group>"; };
 		1F509F2E22B5D96F00C1F6AF /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		1F509F2F22B5DFDC00C1F6AF /* Effect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Effect.swift; sourceTree = "<group>"; };
+		1F509F3022B5DFDC00C1F6AF /* EffectQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EffectQueue.swift; sourceTree = "<group>"; };
+		1F509F3322B5DFFB00C1F6AF /* Feedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
 		1F76B77522A8FDAD003AA7B8 /* CombineExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombineExtensions.swift; sourceTree = "<group>"; };
 		1FAEF3FC22A8B51900368345 /* Harvest.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Harvest.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FAEF40522A8B51900368345 /* HarvestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HarvestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -129,10 +143,15 @@
 			isa = PBXGroup;
 			children = (
 				1FAEF41822A8B56000368345 /* Harvester.swift */,
+				1F1673B422B68E720008E627 /* Harvester+Feedback.swift */,
 				1F2F095922A8DE4E00DF6215 /* Reply.swift */,
+				1F509F2F22B5DFDC00C1F6AF /* Effect.swift */,
+				1F509F3022B5DFDC00C1F6AF /* EffectQueue.swift */,
+				1F509F3322B5DFFB00C1F6AF /* Feedback.swift */,
+				1F2F092122A8CCCB00DF6215 /* Mapping+Helper.swift */,
 				1F2F095B22A8DE6700DF6215 /* CancelBag.swift */,
 				1F2F095D22A8E71100DF6215 /* Property.swift */,
-				1F2F092122A8CCCB00DF6215 /* Mapping+Helper.swift */,
+				1F1673B622B694650008E627 /* FlattenStrategy.swift */,
 				1F76B77522A8FDAD003AA7B8 /* CombineExtensions.swift */,
 			);
 			path = Harvest;
@@ -151,11 +170,13 @@
 			isa = PBXGroup;
 			children = (
 				1F2F095422A8D1C800DF6215 /* Fixtures */,
-				1F2F094C22A8D12F00DF6215 /* AnyMappingSpec.swift */,
-				1F2F094822A8D12E00DF6215 /* EffectMappingSpec.swift */,
 				1F2F094922A8D12F00DF6215 /* MappingSpec.swift */,
 				1F2F094722A8D12E00DF6215 /* StateFuncMappingSpec.swift */,
+				1F2F094C22A8D12F00DF6215 /* AnyMappingSpec.swift */,
 				1F2F094A22A8D12F00DF6215 /* TerminatingSpec.swift */,
+				1F2F094822A8D12E00DF6215 /* EffectMappingSpec.swift */,
+				1F1673BA22B6991D0008E627 /* EffectMappingLatestSpec.swift */,
+				1F1673B922B6991D0008E627 /* FeedbackSpec.swift */,
 				1FAEF41D22A8B56900368345 /* XCTestManifests.swift */,
 			);
 			path = HarvestTests;
@@ -270,11 +291,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F76B77622A8FDAD003AA7B8 /* CombineExtensions.swift in Sources */,
+				1F509F3122B5DFDC00C1F6AF /* Effect.swift in Sources */,
+				1F509F3422B5DFFB00C1F6AF /* Feedback.swift in Sources */,
 				1F2F095E22A8E71100DF6215 /* Property.swift in Sources */,
 				1F2F095A22A8DE4E00DF6215 /* Reply.swift in Sources */,
 				1F2F092222A8CCCB00DF6215 /* Mapping+Helper.swift in Sources */,
 				1F2F095C22A8DE6700DF6215 /* CancelBag.swift in Sources */,
+				1F1673B522B68E720008E627 /* Harvester+Feedback.swift in Sources */,
+				1F509F3222B5DFDC00C1F6AF /* EffectQueue.swift in Sources */,
 				1FAEF41922A8B56000368345 /* Harvester.swift in Sources */,
+				1F1673B722B694650008E627 /* FlattenStrategy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,7 +312,9 @@
 				1F2F095322A8D13B00DF6215 /* MappingSpec.swift in Sources */,
 				1F76B77422A8EEA3003AA7B8 /* EffectMappingSpec.swift in Sources */,
 				1F76B77722A90188003AA7B8 /* AnyMappingSpec.swift in Sources */,
+				1F1673BC22B6991E0008E627 /* FeedbackSpec.swift in Sources */,
 				1F2F095822A8D1C800DF6215 /* Fixtures.swift in Sources */,
+				1F1673BD22B6991E0008E627 /* EffectMappingLatestSpec.swift in Sources */,
 				1F76B77822A901C5003AA7B8 /* StateFuncMappingSpec.swift in Sources */,
 				1F76B77922A90231003AA7B8 /* TerminatingSpec.swift in Sources */,
 			);
