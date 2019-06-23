@@ -8,7 +8,7 @@ class TerminatingSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<MyState, MyInput>
-        typealias EffectMapping = Harvester.EffectMapping<Never>
+        typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
         var harvester: Harvester!
         var lastReply: Reply<MyState, MyInput>?

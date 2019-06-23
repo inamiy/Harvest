@@ -9,7 +9,7 @@ class EffectMappingSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<AuthState, AuthInput>
-        typealias EffectMapping = Harvester.EffectMapping<Never>
+        typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester!
