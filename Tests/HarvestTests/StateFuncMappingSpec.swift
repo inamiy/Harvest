@@ -11,7 +11,7 @@ class StateFuncMappingSpec: QuickSpec
         describe("State-change function mapping") {
 
             typealias Harvester = Harvest.Harvester<CountState, CountInput>
-            typealias EffectMapping = Harvester.EffectMapping<Never>
+            typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
             let inputs = PassthroughSubject<CountInput, Never>()
             var harvester: Harvester!

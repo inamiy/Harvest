@@ -79,18 +79,18 @@ public func | <State, Input: Equatable>(
 
 // MARK: `|` (Harvester.EffectMapping constructor)
 
-public func | <State, Input>(
+public func | <State, Input, Queue, EffectID>(
     mapping: @escaping Harvester<State, Input>.Mapping,
     effect: AnyPublisher<Input, Never>
-    ) -> Harvester<State, Input>.EffectMapping<Never>
+    ) -> Harvester<State, Input>.EffectMapping<Queue, EffectID>
 {
     return mapping | Effect(effect)
 }
 
-public func | <State, Input, Queue>(
+public func | <State, Input, Queue, EffectID>(
     mapping: @escaping Harvester<State, Input>.Mapping,
-    effect: Effect<Input, Queue>?
-    ) -> Harvester<State, Input>.EffectMapping<Queue>
+    effect: Effect<Input, Queue, EffectID>
+    ) -> Harvester<State, Input>.EffectMapping<Queue, EffectID>
 {
     return { fromState, input in
         if let toState = mapping(fromState, input) {
@@ -127,10 +127,10 @@ public func reduce<State, Input, Mappings: Sequence>(_ mappings: Mappings) -> Ha
 }
 
 /// Folds multiple `Harvester.EffectMapping`s into one (preceding mapping has higher priority).
-public func reduce<State, Input, Mappings: Sequence, Queue>(
+public func reduce<State, Input, Mappings: Sequence, Queue, EffectID>(
     _ mappings: Mappings
-    ) -> Harvester<State, Input>.EffectMapping<Queue>
-    where Mappings.Iterator.Element == Harvester<State, Input>.EffectMapping<Queue>
+    ) -> Harvester<State, Input>.EffectMapping<Queue, EffectID>
+    where Mappings.Iterator.Element == Harvester<State, Input>.EffectMapping<Queue, EffectID>
 {
     return { fromState, input in
         for mapping in mappings {

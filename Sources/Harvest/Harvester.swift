@@ -24,7 +24,7 @@ public final class Harvester<State, Input>
         self.init(
             state: initialState,
             inputs: inputSignal,
-            mapping: { mapping($0, $1).map { ($0, Effect<Input, Never>?.none) } }
+            mapping: { mapping($0, $1).map { ($0, Effect<Input, Never, Never>.none) } }
         )
     }
 
@@ -35,11 +35,11 @@ public final class Harvester<State, Input>
     ///   - effect: Initial effect.
     ///   - input: External "hot" input stream that `Harvester` receives.
     ///   - mapping: `EffectMapping` that designates next state and also generates additional effect.
-    public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol>(
+    public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID>(
         state initialState: State,
-        effect initialEffect: Effect<Input, Queue>? = nil,
+        effect initialEffect: Effect<Input, Queue, EffectID> = .none,
         inputs inputSignal: Inputs,
-        mapping: @escaping EffectMapping<Queue>
+        mapping: @escaping EffectMapping<Queue, EffectID>
         )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
@@ -63,24 +63,30 @@ public final class Harvester<State, Input>
                     }
                     .eraseToAnyPublisher()
 
-                var effects = mapped
-                    .compactMap { _, _, mapped -> Effect<Input, Queue>? in
-                        guard case let .some(_, effect) = mapped else { return nil }
+                let effects = mapped
+                    .compactMap { _, _, mapped -> Effect<Input, Queue, EffectID> in
+                        guard case let .some(_, effect) = mapped else { return .none }
                         return effect
                     }
+                    .prepend(initialEffect)
                     .eraseToAnyPublisher()
 
-                if let initialEffect = initialEffect {
-                    effects = effects
-                        .prepend(initialEffect)
-                        .eraseToAnyPublisher()
-                }
+                let publishers = effects.compactMap { $0.publisher }
+                let cancels = effects.compactMap { $0.cancel }
 
                 let effectInputs = Publishers.MergeMany(
                     EffectQueue<Queue>.allCases.map { queue in
-                        effects
+                        publishers
                             .filter { $0.queue == queue }
-                            .flatMap(queue.flattenStrategy) { $0.publisher }
+                            .flatMap(queue.flattenStrategy) { publisher -> AnyPublisher<Input, Never> in
+                                guard let publisherID = publisher.id else {
+                                    return publisher.publisher
+                                }
+
+                                let until = cancels.filter { $0(publisherID) }.map { _ in }
+                                return publisher.publisher.prefix(untilOutputFrom: until)
+                                    .eraseToAnyPublisher()
+                            }
                     }
                 )
                     .eraseToAnyPublisher()
@@ -175,7 +181,7 @@ extension Harvester {
     /// Transducer (input & output) mapping with
     /// **cold publisher** (additional effect) as output,
     /// which may emit next input values for continuous state-transitions.
-    public typealias EffectMapping<Queue> = (State, Input) -> (State, Effect<Input, Queue>?)?
-        where Queue: EffectQueueProtocol
+    public typealias EffectMapping<Queue, EffectID> = (State, Input) -> (State, Effect<Input, Queue, EffectID>)?
+        where Queue: EffectQueueProtocol, EffectID: Equatable
 
 }
