@@ -2,10 +2,10 @@ import Combine
 
 /// Deterministic finite state machine that receives "input"
 /// and with "current state" transform to "next state" & "output (additional effect)".
-public final class Harvester<State, Input>
+public final class Harvester<Input, State>
 {
     private let _state: CurrentValueSubject<State, Never>
-    private let _replies: PassthroughSubject<Reply<State, Input>, Never> = .init()
+    private let _replies: PassthroughSubject<Reply<Input, State>, Never> = .init()
     private let _cancelBag = CancelBag()
 
     /// Initializer using `Mapping`.
@@ -49,11 +49,11 @@ public final class Harvester<State, Input>
             makeSignals: { from -> MakeSignals in
                 let mapped = from
                     .map { input, fromState in
-                        return (input, fromState, mapping(fromState, input))
+                        return (input, fromState, mapping(input, fromState))
                     }
 
                 let replies = mapped
-                    .map { input, fromState, mapped -> Reply<State, Input> in
+                    .map { input, fromState, mapped -> Reply<Input, State> in
                         if let (toState, _) = mapped {
                             return .success((input, fromState, toState))
                         }
@@ -150,7 +150,7 @@ public final class Harvester<State, Input>
 extension Harvester
 {
     internal typealias MakeSignals = (
-        replies: AnyPublisher<Reply<State, Input>, Never>,
+        replies: AnyPublisher<Reply<Input, State>, Never>,
         effects: AnyPublisher<Input, Never>
     )
 }
@@ -166,8 +166,8 @@ extension Harvester
     }
 
     /// `Reply` signal that notifies either `.success` or `.failure` of state-transition on every input.
-    /// - Todo: `some Publisher <.Output == Reply<State, Input>, .Failure == Never>` in future Swift
-    public var replies: AnyPublisher<Reply<State, Input>, Never>
+    /// - Todo: `some Publisher <.Output == Reply<Input, State>, .Failure == Never>` in future Swift
+    public var replies: AnyPublisher<Reply<Input, State>, Never>
     {
         return AnyPublisher(self._replies)
     }
@@ -176,12 +176,12 @@ extension Harvester
 extension Harvester {
 
     /// Basic state-transition function type.
-    public typealias Mapping = (State, Input) -> State?
+    public typealias Mapping = (Input, State) -> State?
 
     /// Transducer (input & output) mapping with
     /// **cold publisher** (additional effect) as output,
     /// which may emit next input values for continuous state-transitions.
-    public typealias EffectMapping<Queue, EffectID> = (State, Input) -> (State, Effect<Input, Queue, EffectID>)?
+    public typealias EffectMapping<Queue, EffectID> = (Input, State) -> (State, Effect<Input, Queue, EffectID>)?
         where Queue: EffectQueueProtocol, EffectID: Equatable
 
 }

@@ -31,12 +31,12 @@ public func => <State: Equatable>(left: State, right: State) -> Transition<State
 
 //infix operator | { associativity left precedence 140 }   // Comment-Out: already built-in
 
-public func | <State, Input>(
+public func | <Input, State>(
     inputFunc: @escaping (Input) -> Bool,
     transition: Transition<State>
-    ) -> Harvester<State, Input>.Mapping
+    ) -> Harvester<Input, State>.Mapping
 {
-    return { fromState, input in
+    return { input, fromState in
         if inputFunc(input) && transition.fromState(fromState) {
             return transition.toState
         }
@@ -46,20 +46,20 @@ public func | <State, Input>(
     }
 }
 
-public func | <State, Input: Equatable>(
+public func | <Input: Equatable, State>(
     input: Input,
     transition: Transition<State>
-    ) -> Harvester<State, Input>.Mapping
+    ) -> Harvester<Input, State>.Mapping
 {
     return { $0 == input } | transition
 }
 
-public func | <State, Input>(
+public func | <Input, State>(
     inputFunc: @escaping (Input) -> Bool,
     transition: @escaping (State) -> State
-    ) -> Harvester<State, Input>.Mapping
+    ) -> Harvester<Input, State>.Mapping
 {
-    return { fromState, input in
+    return { input, fromState in
         if inputFunc(input) {
             return transition(fromState)
         }
@@ -69,31 +69,31 @@ public func | <State, Input>(
     }
 }
 
-public func | <State, Input: Equatable>(
+public func | <Input: Equatable, State>(
     input: Input,
     transition: @escaping (State) -> State
-    ) -> Harvester<State, Input>.Mapping
+    ) -> Harvester<Input, State>.Mapping
 {
     return { $0 == input } | transition
 }
 
 // MARK: `|` (Harvester.EffectMapping constructor)
 
-public func | <State, Input, Queue, EffectID>(
-    mapping: @escaping Harvester<State, Input>.Mapping,
+public func | <Input, State, Queue, EffectID>(
+    mapping: @escaping Harvester<Input, State>.Mapping,
     effect: AnyPublisher<Input, Never>
-    ) -> Harvester<State, Input>.EffectMapping<Queue, EffectID>
+    ) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
 {
     return mapping | Effect(effect)
 }
 
-public func | <State, Input, Queue, EffectID>(
-    mapping: @escaping Harvester<State, Input>.Mapping,
+public func | <Input, State, Queue, EffectID>(
+    mapping: @escaping Harvester<Input, State>.Mapping,
     effect: Effect<Input, Queue, EffectID>
-    ) -> Harvester<State, Input>.EffectMapping<Queue, EffectID>
+    ) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
 {
-    return { fromState, input in
-        if let toState = mapping(fromState, input) {
+    return { input, fromState in
+        if let toState = mapping(input, fromState) {
             return (toState, effect)
         }
         else {
@@ -113,12 +113,12 @@ public func any<T>(_: T) -> Bool
 }
 
 /// Folds multiple `Harvester.Mapping`s into one (preceding mapping has higher priority).
-public func reduce<State, Input, Mappings: Sequence>(_ mappings: Mappings) -> Harvester<State, Input>.Mapping
-    where Mappings.Iterator.Element == Harvester<State, Input>.Mapping
+public func reduce<Input, State, Mappings: Sequence>(_ mappings: Mappings) -> Harvester<Input, State>.Mapping
+    where Mappings.Iterator.Element == Harvester<Input, State>.Mapping
 {
-    return { fromState, input in
+    return { input, fromState in
         for mapping in mappings {
-            if let toState = mapping(fromState, input) {
+            if let toState = mapping(input, fromState) {
                 return toState
             }
         }
@@ -127,14 +127,14 @@ public func reduce<State, Input, Mappings: Sequence>(_ mappings: Mappings) -> Ha
 }
 
 /// Folds multiple `Harvester.EffectMapping`s into one (preceding mapping has higher priority).
-public func reduce<State, Input, Mappings: Sequence, Queue, EffectID>(
+public func reduce<Input, State, Mappings: Sequence, Queue, EffectID>(
     _ mappings: Mappings
-    ) -> Harvester<State, Input>.EffectMapping<Queue, EffectID>
-    where Mappings.Iterator.Element == Harvester<State, Input>.EffectMapping<Queue, EffectID>
+    ) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
+    where Mappings.Iterator.Element == Harvester<Input, State>.EffectMapping<Queue, EffectID>
 {
-    return { fromState, input in
+    return { input, fromState in
         for mapping in mappings {
-            if let tuple = mapping(fromState, input) {
+            if let tuple = mapping(input, fromState) {
                 return tuple
             }
         }

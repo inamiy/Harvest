@@ -3,17 +3,17 @@ import Harvest
 import Quick
 import Nimble
 
-/// Tests for `(State, Input) -> State?` mapping.
+/// Tests for `(Input, State) -> State?` mapping.
 class MappingSpec: QuickSpec
 {
     override func spec()
     {
-        typealias Harvester = Harvest.Harvester<AuthState, AuthInput>
+        typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
         typealias Mapping = Harvester.Mapping
 
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester!
-        var lastReply: Reply<AuthState, AuthInput>?
+        var lastReply: Reply<AuthInput, AuthState>?
 
         describe("Syntax-sugar Mapping") {
 
@@ -120,7 +120,7 @@ class MappingSpec: QuickSpec
         describe("Func-based Mapping") {
 
             beforeEach {
-                let mapping: Mapping = { fromState, input in
+                let mapping: Mapping = { input, fromState in
                     switch (fromState, input) {
                         case (.loggedOut, .login):
                             return .loggingIn

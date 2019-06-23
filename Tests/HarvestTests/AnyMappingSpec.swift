@@ -8,11 +8,11 @@ class AnyMappingSpec: QuickSpec
 {
     override func spec()
     {
-        typealias Harvester = Harvest.Harvester<MyState, MyInput>
+        typealias Harvester = Harvest.Harvester<MyInput, MyState>
 
         let inputs = PassthroughSubject<MyInput, Never>()
         var harvester: Harvester!
-        var lastReply: Reply<MyState, MyInput>?
+        var lastReply: Reply<MyInput, MyState>?
 
         describe("`anyState`/`anyInput` mapping") {
 
