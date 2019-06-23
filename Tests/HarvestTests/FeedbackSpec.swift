@@ -7,13 +7,13 @@ class FeedbackSpec: QuickSpec
 {
     override func spec()
     {
-        typealias Harvester = Harvest.Harvester<AuthState, AuthInput>
+        typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
         typealias Mapping = Harvester.Mapping
-        typealias Feedback = Harvest.Feedback<Reply<AuthState, AuthInput>.Success, AuthInput>
+        typealias Feedback = Harvest.Feedback<Reply<AuthInput, AuthState>.Success, AuthInput>
 
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester?
-        var lastReply: Reply<AuthState, AuthInput>?
+        var lastReply: Reply<AuthInput, AuthState>?
         var testScheduler: TestScheduler!
 
         describe("Feedback") {

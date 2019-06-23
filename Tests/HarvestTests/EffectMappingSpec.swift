@@ -3,17 +3,17 @@ import Harvest
 import Quick
 import Nimble
 
-/// Tests for `(State, Input) -> (State, Effect?)?` mapping.
+/// Tests for `(Input, State) -> (State, Effect?)?` mapping.
 class EffectMappingSpec: QuickSpec
 {
     override func spec()
     {
-        typealias Harvester = Harvest.Harvester<AuthState, AuthInput>
+        typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
         typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester!
-        var lastReply: Reply<AuthState, AuthInput>?
+        var lastReply: Reply<AuthInput, AuthState>?
         var testScheduler: TestScheduler!
 
         describe("Syntax-sugar EffectMapping") {
@@ -105,7 +105,7 @@ class EffectMappingSpec: QuickSpec
                         .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
-                let mapping: EffectMapping = { fromState, input in
+                let mapping: EffectMapping = { input, fromState in
                     switch (fromState, input) {
                         case (.loggedOut, .login):
                             return (.loggingIn, .init(loginOKPublisher))

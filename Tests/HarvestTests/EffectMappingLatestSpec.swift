@@ -8,12 +8,12 @@ class EffectMappingLatestSpec: QuickSpec
 {
     override func spec()
     {
-        typealias Harvester = Harvest.Harvester<AuthState, AuthInput>
+        typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
         typealias EffectMapping = Harvester.EffectMapping<Queue, Never>
 
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester?
-        var lastReply: Reply<AuthState, AuthInput>?
+        var lastReply: Reply<AuthInput, AuthState>?
 
         describe("strategy = `.latest`") {
 

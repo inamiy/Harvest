@@ -7,11 +7,11 @@ class TerminatingSpec: QuickSpec
 {
     override func spec()
     {
-        typealias Harvester = Harvest.Harvester<MyState, MyInput>
+        typealias Harvester = Harvest.Harvester<MyInput, MyState>
         typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
         var harvester: Harvester!
-        var lastReply: Reply<MyState, MyInput>?
+        var lastReply: Reply<MyInput, MyState>?
         var lastRepliesCompletion: Subscribers.Completion<Never>?
 
         /// Flag for internal effect `sendInput1And2AfterDelay` disposed.
