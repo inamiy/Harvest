@@ -23,13 +23,13 @@ class EffectMappingSpec: QuickSpec
 
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKPublisher =
-                    Publishers.Just(AuthInput.loginOK)
+                    Just(AuthInput.loginOK)
                         .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
                 /// Sends `.logoutOK` after delay, simulating async work during `.loggingOut`.
                 let logoutOKPublisher =
-                    Publishers.Just(AuthInput.logoutOK)
+                    Just(AuthInput.logoutOK)
                         .delay(for: 1, scheduler: testScheduler!)
                         .eraseToAnyPublisher()
 
@@ -95,13 +95,13 @@ class EffectMappingSpec: QuickSpec
 
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKPublisher =
-                    Publishers.Just(AuthInput.loginOK)
+                    Just(AuthInput.loginOK)
                         .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
                 /// Sends `.logoutOK` after delay, simulating async work during `.loggingOut`.
                 let logoutOKPublisher =
-                    Publishers.Just(AuthInput.logoutOK)
+                    Just(AuthInput.logoutOK)
                         .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
@@ -179,7 +179,7 @@ class EffectMappingSpec: QuickSpec
 
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKPublisher =
-                    Publishers.Future<AuthInput, Never> { callback in
+                    Future<AuthInput, Never> { callback in
                         effectCallCount += 1
                         testScheduler.schedule {
                             callback(.success(.loginOK))

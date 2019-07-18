@@ -25,10 +25,10 @@ class TerminatingSpec: QuickSpec
             beforeEach {
                 testScheduler = TestScheduler()
 
-                let sendInput1And2AfterDelay: AnyPublisher<MyInput, Never> = Publishers.Just(MyInput.input1)
+                let sendInput1And2AfterDelay: AnyPublisher<MyInput, Never> = Just(MyInput.input1)
                     .delay(for: 1, scheduler: testScheduler)
                     .append(
-                        Publishers.Just(MyInput.input1)
+                        Just(MyInput.input1)
                             .delay(for: 2, scheduler: testScheduler)
                     )
                     .eraseToAnyPublisher()
