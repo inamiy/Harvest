@@ -28,7 +28,7 @@ public struct Effect<Input, Queue, ID>
         )
     {
         self.init(kind: .publisher(
-            Publisher(
+            _Publisher(
                 publisher: publisher,
                 queue: queue.map(EffectQueue.custom) ?? .default,
                 id: id
@@ -57,7 +57,24 @@ public struct Effect<Input, Queue, ID>
     {
         return Effect(.empty)
     }
+
+    // MARK: - Functor
+
+    public func mapInput<Input2>(_ f: @escaping (Input) -> Input2) -> Effect<Input2, Queue, ID>
+    {
+        switch self.kind {
+        case let .publisher(publisher):
+            return .init(kind: .publisher(Effect<Input2, Queue, ID>._Publisher(
+                publisher: publisher.publisher.map(f).eraseToAnyPublisher(),
+                queue: publisher.queue,
+                id: publisher.id
+            )))
+        case let .cancel(predicate):
+            return .cancel(predicate)
+        }
+    }
 }
+
 
 extension Effect: ExpressibleByNilLiteral
 {
@@ -69,7 +86,7 @@ extension Effect: ExpressibleByNilLiteral
 
 extension Effect
 {
-    internal var publisher: Publisher?
+    internal var publisher: _Publisher?
     {
         guard case let .publisher(value) = self.kind else { return nil }
         return value
@@ -82,18 +99,17 @@ extension Effect
     }
 }
 
-
 // MARK: - Inner Types
 
 extension Effect
 {
     internal enum Kind
     {
-        case publisher(Publisher)
+        case publisher(_Publisher)
         case cancel((ID) -> Bool)
     }
 
-    internal struct Publisher
+    internal struct _Publisher
     {
         /// "Cold" stream that runs side-effect and sends next `Input`.
         internal let publisher: AnyPublisher<Input, Never>
