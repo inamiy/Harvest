@@ -2,8 +2,14 @@ import Combine
 
 /// Deterministic finite state machine that receives "input"
 /// and with "current state" transform to "next state" & "output (additional effect)".
-public final class Harvester<Input, State>
+public final class Harvester<Input, State>: ObservableObject
 {
+    /// This is a new state reference that is aimed to replace
+    /// `_state` and `var state: Property<State>` (`Property` to be replaced with `@Published`)
+    /// but segfault 11 for some reason 😞
+    @Published
+    public private(set) var state2: State
+
     private let _state: CurrentValueSubject<State, Never>
     private let _replies: PassthroughSubject<Reply<Input, State>, Never> = .init()
     private var _cancellables: [AnyCancellable] = []
@@ -103,6 +109,8 @@ public final class Harvester<Input, State>
         )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
+        self.state2 = initialState
+
         let stateProperty = CurrentValueSubject<State, Never>(initialState)
         self._state = stateProperty
 
