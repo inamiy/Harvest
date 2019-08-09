@@ -6,7 +6,7 @@ public final class Harvester<Input, State>
 {
     private let _state: CurrentValueSubject<State, Never>
     private let _replies: PassthroughSubject<Reply<Input, State>, Never> = .init()
-    private let _cancelBag = CancelBag()
+    private var _cancellables: [AnyCancellable] = []
 
     /// Initializer using `Mapping`.
     ///
@@ -122,15 +122,15 @@ public final class Harvester<Input, State>
 
         replies.compactMap { $0.toState }
             .assign(to: \.value, on: self._state)
-            .cancelled(by: self._cancelBag)
+            .store(in: &self._cancellables)
 
         replies.sink(receiveValue: self._replies.send)
-            .cancelled(by: self._cancelBag)
+            .store(in: &self._cancellables)
 
         let effectCancellable = effects.subscribe(effectInputs)
 
         effectCancellable
-            .cancelled(by: self._cancelBag)
+            .store(in: &self._cancellables)
 
         inputSignal
             .sink(receiveCompletion: { [_replies] _ in
@@ -138,7 +138,7 @@ public final class Harvester<Input, State>
                 _replies.send(completion: .finished)
                 effectInputs.send(completion: .finished)
             }, receiveValue: { _ in })
-            .cancelled(by: self._cancelBag)
+            .store(in: &self._cancellables)
     }
 
     deinit
