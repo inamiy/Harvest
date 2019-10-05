@@ -13,6 +13,12 @@ class AnyMappingSpec: QuickSpec
         let inputs = PassthroughSubject<MyInput, Never>()
         var harvester: Harvester!
         var lastReply: Reply<MyInput, MyState>?
+        var cancellables: Set<AnyCancellable>!
+
+        beforeEach {
+            lastReply = nil
+            cancellables = []
+        }
 
         describe("`anyState`/`anyInput` mapping") {
 
@@ -24,11 +30,11 @@ class AnyMappingSpec: QuickSpec
 
                 harvester = Harvester(state: .state0, inputs: inputs, mapping: reduce(mappings))
 
-                _ = harvester.replies.sink { reply in
-                    lastReply = reply
-                }
-
-                lastReply = nil
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                    }
+                    .store(in: &cancellables)
             }
 
             it("`anyState`/`anyInput` succeeds") {

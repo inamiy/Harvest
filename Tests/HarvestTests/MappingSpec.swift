@@ -14,10 +14,17 @@ class MappingSpec: QuickSpec
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester!
         var lastReply: Reply<AuthInput, AuthState>?
+        var cancellables: Set<AnyCancellable>!
+
+        beforeEach {
+            lastReply = nil
+            cancellables = []
+        }
 
         describe("Syntax-sugar Mapping") {
 
             beforeEach {
+
                 // NOTE: predicate style i.e. `T -> Bool` is also available.
                 let canForceLogout: (AuthState) -> Bool = [AuthState.loggingIn, .loggedIn].contains
 
@@ -33,11 +40,11 @@ class MappingSpec: QuickSpec
                 // NOTE: Use `concat` to combine all mappings.
                 harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
 
-                _ = harvester.replies.sink { reply in
-                    lastReply = reply
-                }
-
-                lastReply = nil
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                    }
+                    .store(in: &cancellables)
             }
 
             it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
@@ -142,11 +149,11 @@ class MappingSpec: QuickSpec
 
                 harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: mapping)
 
-                _ = harvester.replies.sink { reply in
-                    lastReply = reply
-                }
-
-                lastReply = nil
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                    }
+                    .store(in: &cancellables)
             }
 
             it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {

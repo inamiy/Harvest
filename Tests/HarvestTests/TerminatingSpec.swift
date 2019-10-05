@@ -13,12 +13,19 @@ class TerminatingSpec: QuickSpec
         var harvester: Harvester!
         var lastReply: Reply<MyInput, MyState>?
         var lastRepliesCompletion: Subscribers.Completion<Never>?
+        var cancellables: Set<AnyCancellable>!
 
         /// Flag for internal effect `sendInput1And2AfterDelay` disposed.
 //        var effectDisposed: Bool?
 
         let inputs = PassthroughSubject<MyInput, Never>()
         var testScheduler: TestScheduler!
+
+        beforeEach {
+            lastReply = nil
+            lastRepliesCompletion = nil
+            cancellables = []
+        }
 
         describe("Deinit") {
 
@@ -42,18 +49,16 @@ class TerminatingSpec: QuickSpec
                 // strategy = `.merge`
                 harvester = Harvester(state: .state0, inputs: inputs, mapping: reduce(mappings))
 
-                _ = harvester.replies.sink(
-                    receiveCompletion: { completion in
-                        lastRepliesCompletion = completion
-                    },
-                    receiveValue: { reply in
-                        lastReply = reply
-                    }
-                )
-
-                lastReply = nil
-                lastRepliesCompletion = nil
-//                effectDisposed = false
+                harvester.replies
+                    .sink(
+                        receiveCompletion: { completion in
+                            lastRepliesCompletion = completion
+                        },
+                        receiveValue: { reply in
+                            lastReply = reply
+                        }
+                    )
+                    .store(in: &cancellables)
             }
 
             describe("Harvester deinit") {

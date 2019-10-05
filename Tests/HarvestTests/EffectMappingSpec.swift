@@ -14,7 +14,13 @@ class EffectMappingSpec: QuickSpec
         let inputs = PassthroughSubject<AuthInput, Never>()
         var harvester: Harvester!
         var lastReply: Reply<AuthInput, AuthState>?
+        var cancellables: Set<AnyCancellable>!
         var testScheduler: TestScheduler!
+
+        beforeEach {
+            lastReply = nil
+            cancellables = []
+        }
 
         describe("Syntax-sugar EffectMapping") {
 
@@ -43,11 +49,11 @@ class EffectMappingSpec: QuickSpec
                 // strategy = `.merge`
                 harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
 
-                _ = harvester.replies.sink { reply in
-                    lastReply = reply
-                }
-
-                lastReply = nil
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                    }
+                    .store(in: &cancellables)
             }
 
             /// - Todo: TestScheduler
@@ -123,11 +129,11 @@ class EffectMappingSpec: QuickSpec
                 // strategy = `.merge`
                 harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: mapping)
 
-                _ = harvester.replies.sink { reply in
-                    lastReply = reply
-                }
-
-                lastReply = nil
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                    }
+                    .store(in: &cancellables)
             }
 
             /// - Todo: TestScheduler
@@ -198,11 +204,11 @@ class EffectMappingSpec: QuickSpec
                 // strategy = `.merge`
                 harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
 
-                _ = harvester.replies.sink { reply in
-                    lastReply = reply
-                }
-
-                lastReply = nil
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                    }
+                    .store(in: &cancellables)
             }
 
             /// - Todo: TestScheduler
