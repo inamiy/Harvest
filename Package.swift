@@ -23,18 +23,25 @@ let package = Package(
     ]
 )
 
-// `$ HARVEST_SPM_TEST=1 swift test`
-if ProcessInfo.processInfo.environment.keys.contains("HARVEST_SPM_TEST") {
+// NOTE:
+// `$ HARVEST_SPM_TEST=1 swift test` won't work since using Combine,
+// so instead comment-out this if-condition check to enable Xcode-testing.
+//if ProcessInfo.processInfo.environment.keys.contains("HARVEST_SPM_TEST") {
     package.targets.append(
         .testTarget(
             name: "HarvestTests",
-            dependencies: ["Harvest", "Quick", "Nimble"])
+            dependencies: ["Harvest", "Quick", "Nimble", "Thresher"])
     )
 
     package.dependencies.append(
         contentsOf: [
             .package(url: "https://github.com/Quick/Quick.git", from: "2.1.0"),
-            .package(url: "https://github.com/Quick/Nimble.git", from: "8.0.0"),
+
+            // NOTE: Avoid using Nimble 8.0.3 or above which `CwlPreconditionTesting` dependency doesn't work.
+            // https://github.com/Quick/Nimble/issues/696
+            .package(url: "https://github.com/Quick/Nimble.git", "8.0.0" ... "8.0.2"),
+
+            .package(url: "https://github.com/mluisbrown/Thresher.git", .branch("master"))
         ]
     )
-}
+//}

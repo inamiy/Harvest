@@ -11,12 +11,13 @@ class MappingSpec: QuickSpec
         typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
         typealias Mapping = Harvester.Mapping
 
-        let inputs = PassthroughSubject<AuthInput, Never>()
+        var inputs: PassthroughSubject<AuthInput, Never>!
         var harvester: Harvester!
         var lastReply: Reply<AuthInput, AuthState>?
         var cancellables: Set<AnyCancellable>!
 
         beforeEach {
+            inputs = PassthroughSubject()
             lastReply = nil
             cancellables = []
         }

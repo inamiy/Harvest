@@ -2,6 +2,7 @@ import Combine
 import Harvest
 import Quick
 import Nimble
+import Thresher
 
 class TerminatingSpec: QuickSpec
 {
@@ -10,6 +11,7 @@ class TerminatingSpec: QuickSpec
         typealias Harvester = Harvest.Harvester<MyInput, MyState>
         typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
+        var inputs: PassthroughSubject<MyInput, Never>!
         var harvester: Harvester!
         var lastReply: Reply<MyInput, MyState>?
         var lastRepliesCompletion: Subscribers.Completion<Never>?
@@ -18,20 +20,19 @@ class TerminatingSpec: QuickSpec
         /// Flag for internal effect `sendInput1And2AfterDelay` disposed.
 //        var effectDisposed: Bool?
 
-        let inputs = PassthroughSubject<MyInput, Never>()
         var testScheduler: TestScheduler!
 
         beforeEach {
+            inputs = PassthroughSubject()
             lastReply = nil
             lastRepliesCompletion = nil
             cancellables = []
+            testScheduler = TestScheduler()
         }
 
         describe("Deinit") {
 
             beforeEach {
-                testScheduler = TestScheduler()
-
                 let sendInput1And2AfterDelay: AnyPublisher<MyInput, Never> = Just(MyInput.input1)
                     .delay(for: 1, scheduler: testScheduler)
                     .append(
@@ -76,8 +77,7 @@ class TerminatingSpec: QuickSpec
                     expect(lastRepliesCompletion) == .finished
                 }
 
-                /// - Todo: TestScheduler
-                xit("harvester deinits while sending input") {
+                it("harvester deinits while sending input") {
                     expect(harvester.state.value) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
@@ -91,7 +91,7 @@ class TerminatingSpec: QuickSpec
 //                    expect(effectDisposed) == false
 
                     // `sendInput1And2AfterDelay` will automatically send `.input1` at this point
-                    testScheduler.advanceByInterval(1)
+                    testScheduler.advance(by: 1)
 
                     expect(harvester.state.value) == .state2
                     expect(lastReply?.input) == .input1
@@ -108,7 +108,7 @@ class TerminatingSpec: QuickSpec
 
                     // If `sendInput1And2AfterDelay` is still alive, it will send `.input2` at this point,
                     // but it's already interrupted because `harvester` is deinited.
-                    testScheduler.advanceByInterval(1)
+                    testScheduler.advance(by: 1)
 
                     // Last input should NOT change.
                     expect(lastReply?.input) == .input1
@@ -116,13 +116,12 @@ class TerminatingSpec: QuickSpec
 
             }
 
-            // Unlike `harvester.deinit` or `inputSignal` sending `.Interrupted`,
-            // inputSignal` sending `.Completed` does NOT cancel internal effect,
-            // i.e. `sendInput1And2AfterDelay`.
+            // IMPORTANT:
+            // While `sendInput1And2AfterDelay` is still in progress,
+            // Combine will cancel on-flight inner publishers.
             describe("inputSignal sendCompleted") {
 
-                /// - Todo: TestScheduler
-                xit("inputSignal sendCompleted before sending input") {
+                it("inputSignal sendCompleted before sending input") {
                     expect(harvester.state.value) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
@@ -134,8 +133,7 @@ class TerminatingSpec: QuickSpec
                     expect(lastRepliesCompletion).toNot(beNil())
                 }
 
-                /// - Todo: TestScheduler
-                xit("inputSignal sendCompleted while sending input") {
+                it("inputSignal sendCompleted while sending input") {
                     expect(harvester.state.value) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
@@ -149,7 +147,7 @@ class TerminatingSpec: QuickSpec
 //                    expect(effectDisposed) == false
 
                     // `sendInput1And2AfterDelay` will automatically send `.input1` at this point.
-                    testScheduler.advanceByInterval(1)
+                    testScheduler.advance(by: 1)
 
                     expect(harvester.state.value) == .state2
                     expect(lastReply?.input) == .input1
@@ -158,20 +156,38 @@ class TerminatingSpec: QuickSpec
 
                     inputs.send(completion: .finished)
 
+                    // IMPORTANT:
+                    // While `sendInput1And2AfterDelay` is still in progress,
+                    // Combine will cancel on-flight `delay(2)`.
+                    //
+                    // NOTE:
+                    // In ReactiveSwift and RxSwift,
                     // Not completed yet because `sendInput1And2AfterDelay` is still in progress.
+                    //
+                    // Expected scenario in ReactiveSwift and RxSwift:
+                    //
+                    //     expect(harvester.state.value) == .state2
+                    //     expect(lastReply?.input) == .input1
+                    //     expect(lastRepliesCompletion).to(beNil())
+                    //
+                    //     // `sendInput1And2AfterDelay` will automatically send `.input2` at this point.
+                    //     testScheduler.advance(by: 2)
+                    //
+                    //     // Last state & input should change.
+                    //     expect(harvester.state.value) == .state0
+                    //     expect(lastReply?.input) == .input2
+                    //     expect(lastRepliesCompletion).toNot(beNil())
+
                     expect(harvester.state.value) == .state2
                     expect(lastReply?.input) == .input1
-                    expect(lastRepliesCompletion).to(beNil())
-//                    expect(effectDisposed) == false
+                    expect(lastRepliesCompletion) == .finished
 
-                    // `sendInput1And2AfterDelay` will automatically send `.input2` at this point.
-                    testScheduler.advanceByInterval(2)
+                    testScheduler.advance(by: 2)
 
-                    // Last state & input should change.
-                    expect(harvester.state.value) == .state0
-                    expect(lastReply?.input) == .input2
-                    expect(lastRepliesCompletion).toNot(beNil())
-//                    expect(effectDisposed) == true
+                    // Last state & input should NOT change (Combine's spec).
+                    expect(harvester.state.value) == .state2
+                    expect(lastReply?.input) == .input1
+                    expect(lastRepliesCompletion) == .finished
                 }
 
             }

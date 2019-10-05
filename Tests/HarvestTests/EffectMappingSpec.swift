@@ -2,6 +2,7 @@ import Combine
 import Harvest
 import Quick
 import Nimble
+import Thresher
 
 /// Tests for `(Input, State) -> (State, Effect?)?` mapping.
 class EffectMappingSpec: QuickSpec
@@ -11,22 +12,22 @@ class EffectMappingSpec: QuickSpec
         typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
         typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
-        let inputs = PassthroughSubject<AuthInput, Never>()
+        var inputs: PassthroughSubject<AuthInput, Never>!
         var harvester: Harvester!
         var lastReply: Reply<AuthInput, AuthState>?
         var cancellables: Set<AnyCancellable>!
         var testScheduler: TestScheduler!
 
         beforeEach {
+            inputs = PassthroughSubject()
             lastReply = nil
             cancellables = []
+            testScheduler = TestScheduler()
         }
 
         describe("Syntax-sugar EffectMapping") {
 
             beforeEach {
-                testScheduler = TestScheduler()
-
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKPublisher =
                     Just(AuthInput.loginOK)
@@ -56,8 +57,7 @@ class EffectMappingSpec: QuickSpec
                     .store(in: &cancellables)
             }
 
-            /// - Todo: TestScheduler
-            xit("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
+            it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
                 expect(harvester.state.value) == .loggedOut
                 expect(lastReply).to(beNil())
 
@@ -69,7 +69,7 @@ class EffectMappingSpec: QuickSpec
                 expect(harvester.state.value) == .loggingIn
 
                 // `loginOKPublisher` will automatically send `.loginOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn
@@ -84,7 +84,7 @@ class EffectMappingSpec: QuickSpec
                 expect(harvester.state.value) == .loggingOut
 
                 // `logoutOKPublisher` will automatically send `.logoutOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut
@@ -97,8 +97,6 @@ class EffectMappingSpec: QuickSpec
         describe("Func-based EffectMapping") {
 
             beforeEach {
-                testScheduler = TestScheduler()
-
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKPublisher =
                     Just(AuthInput.loginOK)
@@ -136,8 +134,7 @@ class EffectMappingSpec: QuickSpec
                     .store(in: &cancellables)
             }
 
-            /// - Todo: TestScheduler
-            xit("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
+            it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
                 expect(harvester.state.value) == .loggedOut
                 expect(lastReply).to(beNil())
 
@@ -149,7 +146,7 @@ class EffectMappingSpec: QuickSpec
                 expect(harvester.state.value) == .loggingIn
 
                 // `loginOKPublisher` will automatically send `.loginOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn
@@ -164,7 +161,7 @@ class EffectMappingSpec: QuickSpec
                 expect(harvester.state.value) == .loggingOut
 
                 // `logoutOKPublisher` will automatically send `.logoutOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut
@@ -180,19 +177,20 @@ class EffectMappingSpec: QuickSpec
             var effectCallCount = 0
 
             beforeEach {
-                testScheduler = TestScheduler()
                 effectCallCount = 0
 
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKPublisher =
-                    Future<AuthInput, Never> { callback in
-                        effectCallCount += 1
-                        testScheduler.schedule {
-                            callback(.success(.loginOK))
+                    Deferred {
+                        Future<AuthInput, Never> { callback in
+                            effectCallCount += 1
+                            testScheduler.schedule {
+                                callback(.success(.loginOK))
+                            }
+//                            return testScheduler.scheduleRelative((), dueTime: 0.1, action: { () -> Disposable in
+//                                callback(.success(.loginOK))
+//                            })
                         }
-//                        return testScheduler.scheduleRelative((), dueTime: 0.1, action: { () -> Disposable in
-//                            callback(.success(.loginOK))
-//                        })
                     }
                         .eraseToAnyPublisher()
 
@@ -211,8 +209,7 @@ class EffectMappingSpec: QuickSpec
                     .store(in: &cancellables)
             }
 
-            /// - Todo: TestScheduler
-            xit("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
+            it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
                 expect(harvester.state.value) == .loggedOut
                 expect(lastReply).to(beNil())
                 expect(effectCallCount) == 0
@@ -226,7 +223,7 @@ class EffectMappingSpec: QuickSpec
                 expect(effectCallCount) == 1
 
                 // `loginOKPublisher` will automatically send `.loginOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn

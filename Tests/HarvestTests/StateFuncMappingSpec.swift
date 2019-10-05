@@ -13,10 +13,12 @@ class StateFuncMappingSpec: QuickSpec
             typealias Harvester = Harvest.Harvester<CountInput, CountState>
             typealias EffectMapping = Harvester.EffectMapping<Never, Never>
 
-            let inputs = PassthroughSubject<CountInput, Never>()
+            var inputs: PassthroughSubject<CountInput, Never>!
             var harvester: Harvester!
 
             beforeEach {
+                inputs = PassthroughSubject()
+
                 var mappings: [EffectMapping] = [
                     .increment | { $0 + 1 } | .empty
                     // Comment-Out: Type inference is super slow in Swift 4.2... (use `+=` instead)

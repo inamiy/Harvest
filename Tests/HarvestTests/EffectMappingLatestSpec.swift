@@ -2,6 +2,7 @@ import Combine
 import Harvest
 import Quick
 import Nimble
+import Thresher
 
 /// EffectMapping tests with `strategy = .latest`.
 class EffectMappingLatestSpec: QuickSpec
@@ -11,23 +12,22 @@ class EffectMappingLatestSpec: QuickSpec
         typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
         typealias EffectMapping = Harvester.EffectMapping<Queue, Never>
 
-        let inputs = PassthroughSubject<AuthInput, Never>()
+        var inputs: PassthroughSubject<AuthInput, Never>!
         var harvester: Harvester!
         var lastReply: Reply<AuthInput, AuthState>?
         var cancellables: Set<AnyCancellable>!
+        var testScheduler: TestScheduler!
 
         beforeEach {
+            inputs = PassthroughSubject()
             lastReply = nil
             cancellables = []
+            testScheduler = TestScheduler()
         }
 
         describe("strategy = `.latest`") {
 
-            var testScheduler: TestScheduler!
-
             beforeEach {
-                testScheduler = TestScheduler()
-
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKProducer =
                     Just(AuthInput.loginOK)
@@ -56,8 +56,7 @@ class EffectMappingLatestSpec: QuickSpec
                     .store(in: &cancellables)
             }
 
-            /// - Todo: TestScheduler
-            xit("`strategy = .latest` should not interrupt inner effects when transition fails") {
+            it("`strategy = .latest` should not interrupt inner effects when transition fails") {
                 expect(harvester.state.value) == .loggedOut
                 expect(lastReply).to(beNil())
 
@@ -68,7 +67,7 @@ class EffectMappingLatestSpec: QuickSpec
                 expect(lastReply?.toState) == .loggingIn
                 expect(harvester.state.value) == .loggingIn
 
-                testScheduler.advanceByInterval(0.1)
+                testScheduler.advance(by: 0.1)
 
                 // fails (`loginOKProducer` will not be interrupted)
                 inputs.send(.login)
@@ -79,7 +78,7 @@ class EffectMappingLatestSpec: QuickSpec
                 expect(harvester.state.value) == .loggingIn
 
                 // `loginOKProducer` will automatically send `.loginOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn

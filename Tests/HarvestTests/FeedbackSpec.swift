@@ -2,6 +2,7 @@ import Combine
 import Harvest
 import Quick
 import Nimble
+import Thresher
 
 class FeedbackSpec: QuickSpec
 {
@@ -11,22 +12,22 @@ class FeedbackSpec: QuickSpec
         typealias Mapping = Harvester.Mapping
         typealias Feedback = Harvest.Feedback<Reply<AuthInput, AuthState>.Success, AuthInput>
 
-        let inputs = PassthroughSubject<AuthInput, Never>()
+        var inputs: PassthroughSubject<AuthInput, Never>!
         var harvester: Harvester!
         var lastReply: Reply<AuthInput, AuthState>?
         var cancellables: Set<AnyCancellable>!
         var testScheduler: TestScheduler!
 
         beforeEach {
+            inputs = PassthroughSubject()
             lastReply = nil
             cancellables = []
+            testScheduler = TestScheduler()
         }
 
         describe("Feedback") {
 
             beforeEach {
-                testScheduler = TestScheduler()
-
                 /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
                 let loginOKProducer =
                     Just(AuthInput.loginOK)
@@ -69,8 +70,7 @@ class FeedbackSpec: QuickSpec
                     .store(in: &cancellables)
             }
 
-            /// - Todo: TestScheduler
-            xit("`LoggedOut (auto) => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
+            it("`LoggedOut (auto) => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
                 expect(harvester.state.value) == .loggedOut
                 expect(lastReply).to(beNil())
 
@@ -82,7 +82,7 @@ class FeedbackSpec: QuickSpec
                 expect(harvester.state.value) == .loggingIn
 
                 // `loginOKProducer` will automatically send `.loginOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn
@@ -97,7 +97,7 @@ class FeedbackSpec: QuickSpec
                 expect(harvester.state.value) == .loggingOut
 
                 // `logoutOKProducer` will automatically send `.logoutOK`
-                testScheduler.advanceByInterval(1)
+                testScheduler.advance(by: 1)
 
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut

@@ -54,20 +54,20 @@ enum MyInput
 // MARK: - Workarounds
 
 // Dummy test scheduler for letting compile work.
-typealias TestScheduler = ImmediateScheduler
-
-extension TestScheduler
-{
-    init()
-    {
-        self = TestScheduler.shared
-    }
-
-    func advanceByInterval(_ t: Double)
-    {
-        // do nothing
-    }
-}
+//typealias TestScheduler = ImmediateScheduler
+//
+//extension TestScheduler
+//{
+//    init()
+//    {
+//        self = TestScheduler.shared
+//    }
+//
+//    func advanceByInterval(_ t: Double)
+//    {
+//        // do nothing
+//    }
+//}
 
 extension Subscribers.Completion: Equatable where Failure: Equatable
 {

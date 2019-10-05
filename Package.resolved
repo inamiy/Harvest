@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Nimble",
+        "repositoryURL": "https://github.com/Quick/Nimble.git",
+        "state": {
+          "branch": null,
+          "revision": "f8657642dfdec9973efc79cc68bcef43a653a2bc",
+          "version": "8.0.2"
+        }
+      },
+      {
+        "package": "Quick",
+        "repositoryURL": "https://github.com/Quick/Quick.git",
+        "state": {
+          "branch": null,
+          "revision": "33682c2f6230c60614861dfc61df267e11a1602f",
+          "version": "2.2.0"
+        }
+      },
+      {
+        "package": "Thresher",
+        "repositoryURL": "https://github.com/mluisbrown/Thresher.git",
+        "state": {
+          "branch": "master",
+          "revision": "37b1067465d726383c3da93db6886ac633b58847",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
