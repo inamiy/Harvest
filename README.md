@@ -152,7 +152,7 @@ Note that **any sizes of `State` and `Input` will work using `Harvester`**, from
 
 ## Using `Feedback` effect model as alternative
 
-Instead of using `EffectMapping` with fine-grained `EffectQueue` model, Harvest also supports `Feedback` system as described in the following libararies:
+Instead of using `EffectMapping` with fine-grained `EffectQueue` model, Harvest also supports `Feedback` system as described in the following libraries:
 
 - [NoTests/RxFeedback](https://github.com/NoTests/RxFeedback.swift)
 - [Babylonpartners/ReactiveFeedback](https://github.com/Babylonpartners/ReactiveFeedback)
