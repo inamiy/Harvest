@@ -57,7 +57,7 @@ class EffectMappingLatestSpec: QuickSpec
             }
 
             it("`strategy = .latest` should not interrupt inner effects when transition fails") {
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
                 expect(lastReply).to(beNil())
 
                 inputs.send(.login)
@@ -65,7 +65,7 @@ class EffectMappingLatestSpec: QuickSpec
                 expect(lastReply?.input) == .login
                 expect(lastReply?.fromState) == .loggedOut
                 expect(lastReply?.toState) == .loggingIn
-                expect(harvester.state.value) == .loggingIn
+                expect(harvester.state) == .loggingIn
 
                 testScheduler.advance(by: 0.1)
 
@@ -75,7 +75,7 @@ class EffectMappingLatestSpec: QuickSpec
                 expect(lastReply?.input) == .login
                 expect(lastReply?.fromState) == .loggingIn
                 expect(lastReply?.toState).to(beNil())
-                expect(harvester.state.value) == .loggingIn
+                expect(harvester.state) == .loggingIn
 
                 // `loginOKProducer` will automatically send `.loginOK`
                 testScheduler.advance(by: 1)
@@ -83,7 +83,7 @@ class EffectMappingLatestSpec: QuickSpec
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn
                 expect(lastReply?.toState) == .loggedIn
-                expect(harvester.state.value) == .loggedIn
+                expect(harvester.state) == .loggedIn
             }
 
         }

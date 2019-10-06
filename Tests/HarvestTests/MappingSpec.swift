@@ -49,7 +49,7 @@ class MappingSpec: QuickSpec
             }
 
             it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
                 expect(lastReply).to(beNil())
 
                 inputs.send(.login)
@@ -57,32 +57,32 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .login
                 expect(lastReply?.fromState) == .loggedOut
                 expect(lastReply?.toState) == .loggingIn
-                expect(harvester.state.value) == .loggingIn
+                expect(harvester.state) == .loggingIn
 
                 inputs.send(.loginOK)
 
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn
                 expect(lastReply?.toState) == .loggedIn
-                expect(harvester.state.value) == .loggedIn
+                expect(harvester.state) == .loggedIn
 
                 inputs.send(.logout)
 
                 expect(lastReply?.input) == .logout
                 expect(lastReply?.fromState) == .loggedIn
                 expect(lastReply?.toState) == .loggingOut
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 inputs.send(.logoutOK)
 
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState) == .loggedOut
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
             }
 
             it("`LoggedOut => LoggingIn ==(ForceLogout)==> LoggingOut => LoggedOut` succeed") {
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
                 expect(lastReply).to(beNil())
 
                 inputs.send(.login)
@@ -90,14 +90,14 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .login
                 expect(lastReply?.fromState) == .loggedOut
                 expect(lastReply?.toState) == .loggingIn
-                expect(harvester.state.value) == .loggingIn
+                expect(harvester.state) == .loggingIn
 
                 inputs.send(.forceLogout)
 
                 expect(lastReply?.input) == .forceLogout
                 expect(lastReply?.fromState) == .loggingIn
                 expect(lastReply?.toState) == .loggingOut
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 // fails
                 inputs.send(.loginOK)
@@ -105,7 +105,7 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState).to(beNil())
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 // fails
                 inputs.send(.logout)
@@ -113,14 +113,14 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .logout
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState).to(beNil())
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 inputs.send(.logoutOK)
 
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState) == .loggedOut
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
             }
 
         }
@@ -158,7 +158,7 @@ class MappingSpec: QuickSpec
             }
 
             it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
                 expect(lastReply).to(beNil())
 
                 inputs.send(.login)
@@ -166,32 +166,32 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .login
                 expect(lastReply?.fromState) == .loggedOut
                 expect(lastReply?.toState) == .loggingIn
-                expect(harvester.state.value) == .loggingIn
+                expect(harvester.state) == .loggingIn
 
                 inputs.send(.loginOK)
 
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn
                 expect(lastReply?.toState) == .loggedIn
-                expect(harvester.state.value) == .loggedIn
+                expect(harvester.state) == .loggedIn
 
                 inputs.send(.logout)
 
                 expect(lastReply?.input) == .logout
                 expect(lastReply?.fromState) == .loggedIn
                 expect(lastReply?.toState) == .loggingOut
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 inputs.send(.logoutOK)
 
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState) == .loggedOut
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
             }
 
             it("`LoggedOut => LoggingIn ==(ForceLogout)==> LoggingOut => LoggedOut` succeed") {
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
                 expect(lastReply).to(beNil())
 
                 inputs.send(.login)
@@ -199,14 +199,14 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .login
                 expect(lastReply?.fromState) == .loggedOut
                 expect(lastReply?.toState) == .loggingIn
-                expect(harvester.state.value) == .loggingIn
+                expect(harvester.state) == .loggingIn
 
                 inputs.send(.forceLogout)
 
                 expect(lastReply?.input) == .forceLogout
                 expect(lastReply?.fromState) == .loggingIn
                 expect(lastReply?.toState) == .loggingOut
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 // fails
                 inputs.send(.loginOK)
@@ -214,7 +214,7 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState).to(beNil())
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 // fails
                 inputs.send(.logout)
@@ -222,14 +222,14 @@ class MappingSpec: QuickSpec
                 expect(lastReply?.input) == .logout
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState).to(beNil())
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 inputs.send(.logoutOK)
 
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState) == .loggedOut
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
             }
 
         }

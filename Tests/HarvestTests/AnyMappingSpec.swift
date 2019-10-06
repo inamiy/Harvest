@@ -39,7 +39,7 @@ class AnyMappingSpec: QuickSpec
             }
 
             it("`anyState`/`anyInput` succeeds") {
-                expect(harvester.state.value) == .state0
+                expect(harvester.state) == .state0
                 expect(lastReply).to(beNil())
 
                 // try any input (fails)
@@ -48,7 +48,7 @@ class AnyMappingSpec: QuickSpec
                 expect(lastReply?.input) == .input2
                 expect(lastReply?.fromState) == .state0
                 expect(lastReply?.toState).to(beNil())
-                expect(harvester.state.value) == .state0
+                expect(harvester.state) == .state0
 
                 // try `.login` from any state
                 inputs.send(.input0)
@@ -56,7 +56,7 @@ class AnyMappingSpec: QuickSpec
                 expect(lastReply?.input) == .input0
                 expect(lastReply?.fromState) == .state0
                 expect(lastReply?.toState) == .state1
-                expect(harvester.state.value) == .state1
+                expect(harvester.state) == .state1
 
                 // try any input
                 inputs.send(.input2)
@@ -64,7 +64,7 @@ class AnyMappingSpec: QuickSpec
                 expect(lastReply?.input) == .input2
                 expect(lastReply?.fromState) == .state1
                 expect(lastReply?.toState) == .state2
-                expect(harvester.state.value) == .state2
+                expect(harvester.state) == .state2
             }
 
         }
