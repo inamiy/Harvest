@@ -124,15 +124,15 @@ NOTE: `func reduce` is declared to combine multiple `mappings` into one.
 ```swift
 let send = inputs.send
 
-expect(harvester.state.value) == .loggedIn    // already logged in
+expect(harvester.state) == .loggedIn    // already logged in
 send(Input.logout)
-expect(harvester.state.value) == .loggingOut  // logging out...
+expect(harvester.state) == .loggingOut  // logging out...
 // `logoutOKPublisher` will automatically send `Input.logoutOK` later
 // and transit to `State.loggedOut`.
 
-expect(harvester.state.value) == .loggedOut   // already logged out
+expect(harvester.state) == .loggedOut   // already logged out
 send(Input.login)
-expect(harvester.state.value) == .loggingIn   // logging in...
+expect(harvester.state) == .loggingIn   // logging in...
 // `loginOKPublisher` will automatically send `Input.loginOK` later
 // and transit to `State.loggedIn`.
 
@@ -140,7 +140,7 @@ expect(harvester.state.value) == .loggingIn   // logging in...
 // Let's send `Input.forceLogout` immediately after `State.loggingIn`.
 
 send(Input.forceLogout)                       // 💥💣💥
-expect(harvester.state.value) == .loggingOut  // logging out...
+expect(harvester.state) == .loggingOut  // logging out...
 // `forceLogoutOKublisher` will automatically send `Input.logoutOK` later
 // and transit to `State.loggedOut`.
 ```

@@ -65,7 +65,7 @@ class TerminatingSpec: QuickSpec
             describe("Harvester deinit") {
 
                 it("harvester deinits before sending input") {
-                    expect(harvester.state.value) == .state0
+                    expect(harvester.state) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
 
@@ -78,14 +78,14 @@ class TerminatingSpec: QuickSpec
                 }
 
                 it("harvester deinits while sending input") {
-                    expect(harvester.state.value) == .state0
+                    expect(harvester.state) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
 //                    expect(effectDisposed) == false
 
                     inputs.send(.input0)
 
-                    expect(harvester.state.value) == .state1
+                    expect(harvester.state) == .state1
                     expect(lastReply?.input) == .input0
                     expect(lastRepliesCompletion).to(beNil())
 //                    expect(effectDisposed) == false
@@ -93,7 +93,7 @@ class TerminatingSpec: QuickSpec
                     // `sendInput1And2AfterDelay` will automatically send `.input1` at this point
                     testScheduler.advance(by: 1)
 
-                    expect(harvester.state.value) == .state2
+                    expect(harvester.state) == .state2
                     expect(lastReply?.input) == .input1
                     expect(lastRepliesCompletion).to(beNil())
 //                    expect(effectDisposed) == false
@@ -122,26 +122,26 @@ class TerminatingSpec: QuickSpec
             describe("inputSignal sendCompleted") {
 
                 it("inputSignal sendCompleted before sending input") {
-                    expect(harvester.state.value) == .state0
+                    expect(harvester.state) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
 
                     inputs.send(completion: .finished)
 
-                    expect(harvester.state.value) == .state0
+                    expect(harvester.state) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).toNot(beNil())
                 }
 
                 it("inputSignal sendCompleted while sending input") {
-                    expect(harvester.state.value) == .state0
+                    expect(harvester.state) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
 //                    expect(effectDisposed) == false
 
                     inputs.send(.input0)
 
-                    expect(harvester.state.value) == .state1
+                    expect(harvester.state) == .state1
                     expect(lastReply?.input) == .input0
                     expect(lastRepliesCompletion).to(beNil())
 //                    expect(effectDisposed) == false
@@ -149,7 +149,7 @@ class TerminatingSpec: QuickSpec
                     // `sendInput1And2AfterDelay` will automatically send `.input1` at this point.
                     testScheduler.advance(by: 1)
 
-                    expect(harvester.state.value) == .state2
+                    expect(harvester.state) == .state2
                     expect(lastReply?.input) == .input1
                     expect(lastRepliesCompletion).to(beNil())
 //                    expect(effectDisposed) == false
@@ -166,7 +166,7 @@ class TerminatingSpec: QuickSpec
                     //
                     // Expected scenario in ReactiveSwift and RxSwift:
                     //
-                    //     expect(harvester.state.value) == .state2
+                    //     expect(harvester.state) == .state2
                     //     expect(lastReply?.input) == .input1
                     //     expect(lastRepliesCompletion).to(beNil())
                     //
@@ -174,18 +174,18 @@ class TerminatingSpec: QuickSpec
                     //     testScheduler.advance(by: 2)
                     //
                     //     // Last state & input should change.
-                    //     expect(harvester.state.value) == .state0
+                    //     expect(harvester.state) == .state0
                     //     expect(lastReply?.input) == .input2
                     //     expect(lastRepliesCompletion).toNot(beNil())
 
-                    expect(harvester.state.value) == .state2
+                    expect(harvester.state) == .state2
                     expect(lastReply?.input) == .input1
                     expect(lastRepliesCompletion) == .finished
 
                     testScheduler.advance(by: 2)
 
                     // Last state & input should NOT change (Combine's spec).
-                    expect(harvester.state.value) == .state2
+                    expect(harvester.state) == .state2
                     expect(lastReply?.input) == .input1
                     expect(lastRepliesCompletion) == .finished
                 }

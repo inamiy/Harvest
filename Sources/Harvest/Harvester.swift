@@ -4,7 +4,9 @@ import Combine
 /// and with "current state" transform to "next state" & "output (additional effect)".
 public final class Harvester<Input, State>
 {
-    private let _state: CurrentValueSubject<State, Never>
+    @Published
+    public private(set) var state: State
+
     private let _replies: PassthroughSubject<Reply<Input, State>, Never> = .init()
     private var _cancellables: [AnyCancellable] = []
 
@@ -103,16 +105,15 @@ public final class Harvester<Input, State>
         )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
-        let stateProperty = CurrentValueSubject<State, Never>(initialState)
-        self._state = stateProperty
+        self._state = Published(initialValue: initialState)
 
         let effectInputs = PassthroughSubject<Input, Never>()
 
         let mergedInputs = Publishers.Merge(inputSignal, effectInputs)
 
         let mapped = mergedInputs
-            .map { input -> (Input, State) in
-                let fromState = stateProperty.value    // TODO: Use withLatestFrom when supported
+            .map { [unowned self] input -> (Input, State) in
+                let fromState = self.state
                 return (input, fromState)
             }
             .share()
@@ -121,7 +122,9 @@ public final class Harvester<Input, State>
         let (replies, effects) = makeSignals(mapped)
 
         replies.compactMap { $0.toState }
-            .assign(to: \.value, on: self._state)
+            .sink { [unowned self] state in
+                self.state = state
+            }
             .store(in: &self._cancellables)
 
         replies.sink(receiveValue: self._replies.send)
@@ -159,17 +162,18 @@ extension Harvester
 
 extension Harvester
 {
-    /// - Todo: `some Publisher & HasCurrentValue <.Output == State, .Failure == Never>` in future Swift
-    public var state: Property<State>
-    {
-        return Property(self._state)
-    }
-
     /// `Reply` signal that notifies either `.success` or `.failure` of state-transition on every input.
-    /// - Todo: `some Publisher <.Output == Reply<Input, State>, .Failure == Never>` in future Swift
     public var replies: AnyPublisher<Reply<Input, State>, Never>
     {
         return AnyPublisher(self._replies)
+    }
+}
+
+extension Harvester: ObservableObject
+{
+    public var objectWillChange: Published<State>.Publisher
+    {
+        self.$state
     }
 }
 

@@ -31,18 +31,18 @@ class StateFuncMappingSpec: QuickSpec
             }
 
             it("`.increment` and `.decrement` succeed") {
-                expect(harvester.state.value) == 0
+                expect(harvester.state) == 0
                 inputs.send(.increment)
 
                 // NOTE: tvOS fails for some reason...
                 #if !os(tvOS)
-                expect(harvester.state.value) == 1
+                expect(harvester.state) == 1
                 inputs.send(.increment)
-                expect(harvester.state.value) == 2
+                expect(harvester.state) == 2
                 inputs.send(.decrement)
-                expect(harvester.state.value) == 1
+                expect(harvester.state) == 1
                 inputs.send(.decrement)
-                expect(harvester.state.value) == 0
+                expect(harvester.state) == 0
                 #endif
             }
 

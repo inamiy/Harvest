@@ -71,7 +71,7 @@ class FeedbackSpec: QuickSpec
             }
 
             it("`LoggedOut (auto) => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
                 expect(lastReply).to(beNil())
 
                 inputs.send(.login)
@@ -79,7 +79,7 @@ class FeedbackSpec: QuickSpec
                 expect(lastReply?.input) == .login
                 expect(lastReply?.fromState) == .loggedOut
                 expect(lastReply?.toState) == .loggingIn
-                expect(harvester.state.value) == .loggingIn
+                expect(harvester.state) == .loggingIn
 
                 // `loginOKProducer` will automatically send `.loginOK`
                 testScheduler.advance(by: 1)
@@ -87,14 +87,14 @@ class FeedbackSpec: QuickSpec
                 expect(lastReply?.input) == .loginOK
                 expect(lastReply?.fromState) == .loggingIn
                 expect(lastReply?.toState) == .loggedIn
-                expect(harvester.state.value) == .loggedIn
+                expect(harvester.state) == .loggedIn
 
                 inputs.send(.logout)
 
                 expect(lastReply?.input) == .logout
                 expect(lastReply?.fromState) == .loggedIn
                 expect(lastReply?.toState) == .loggingOut
-                expect(harvester.state.value) == .loggingOut
+                expect(harvester.state) == .loggingOut
 
                 // `logoutOKProducer` will automatically send `.logoutOK`
                 testScheduler.advance(by: 1)
@@ -102,7 +102,7 @@ class FeedbackSpec: QuickSpec
                 expect(lastReply?.input) == .logoutOK
                 expect(lastReply?.fromState) == .loggingOut
                 expect(lastReply?.toState) == .loggedOut
-                expect(harvester.state.value) == .loggedOut
+                expect(harvester.state) == .loggedOut
             }
 
         }
