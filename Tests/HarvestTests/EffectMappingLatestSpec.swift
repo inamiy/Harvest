@@ -90,24 +90,3 @@ class EffectMappingLatestSpec: QuickSpec
 
     }
 }
-
-// MARK: - Private
-
-private enum EffectQueue: EffectQueueProtocol
-{
-    case `default`
-    case request
-
-    var flattenStrategy: FlattenStrategy
-    {
-        switch self {
-        case .default: return .merge
-        case .request: return .latest
-        }
-    }
-
-    static var defaultEffectQueue: EffectQueue
-    {
-        .default
-    }
-}

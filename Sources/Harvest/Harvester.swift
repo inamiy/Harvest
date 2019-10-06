@@ -165,7 +165,7 @@ extension Harvester
     /// `Reply` signal that notifies either `.success` or `.failure` of state-transition on every input.
     public var replies: AnyPublisher<Reply<Input, State>, Never>
     {
-        return AnyPublisher(self._replies)
+        AnyPublisher(self._replies)
     }
 }
 
