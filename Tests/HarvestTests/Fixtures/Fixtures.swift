@@ -1,3 +1,4 @@
+import Foundation
 import Combine
 import Harvest
 
@@ -89,5 +90,14 @@ enum RequestEffectQueue: EffectQueueProtocol
     static var defaultEffectQueue: RequestEffectQueue
     {
         .default
+    }
+}
+
+// MARK: - Helpers
+
+func asyncAfter(_ timeInterval: TimeInterval, completion: @escaping () -> Void)
+{
+    DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) {
+        completion()
     }
 }
