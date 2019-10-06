@@ -4,6 +4,8 @@ import Combine
 /// to perform arbitrary `Queue.flattenStrategy`.
 ///
 /// This type also handles effect cancellation via `cancel`.
+///
+/// - Note: Set `ID = Never` if not interested in cancellation.
 public struct Effect<Input, Queue, ID>
     where Queue: EffectQueueProtocol, ID: Equatable
 {
