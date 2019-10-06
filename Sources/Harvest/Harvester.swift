@@ -24,7 +24,7 @@ public final class Harvester<Input, State>
         self.init(
             state: initialState,
             inputs: inputSignal,
-            mapping: { mapping($0, $1).map { ($0, Effect<Input, Never, Never>.none) } }
+            mapping: { mapping($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.none) } }
         )
     }
 
@@ -75,7 +75,7 @@ public final class Harvester<Input, State>
                 let cancels = effects.compactMap { $0.cancel }
 
                 let effectInputs = Publishers.MergeMany(
-                    EffectQueue<Queue>.allCases.map { queue in
+                    Queue.allCases.map { queue in
                         publishers
                             .filter { $0.queue == queue }
                             .flatMap(queue.flattenStrategy) { publisher -> AnyPublisher<Input, Never> in

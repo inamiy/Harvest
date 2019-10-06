@@ -50,35 +50,3 @@ enum MyInput
 {
     case input0, input1, input2
 }
-
-// MARK: - Workarounds
-
-// Dummy test scheduler for letting compile work.
-//typealias TestScheduler = ImmediateScheduler
-//
-//extension TestScheduler
-//{
-//    init()
-//    {
-//        self = TestScheduler.shared
-//    }
-//
-//    func advanceByInterval(_ t: Double)
-//    {
-//        // do nothing
-//    }
-//}
-
-extension Subscribers.Completion: Equatable where Failure: Equatable
-{
-    public static func == (lhs: Subscribers.Completion<Failure>, rhs: Subscribers.Completion<Failure>) -> Bool {
-        switch (lhs, rhs) {
-        case (.finished, .finished):
-            return true
-        case let (.failure(l), .failure(r)):
-            return l == r
-        default:
-            return false
-        }
-    }
-}

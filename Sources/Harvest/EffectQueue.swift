@@ -1,46 +1,52 @@
 // MARK: - EffectQueueProtocol
 
 /// `Effect` queueing protocol to split event-flows into queues
-/// and each will be flattened using `flattenStrategy`, then merged.
+/// and each will be flattened using `flattenStrategy`,
+/// which are then merged as a next input of `Harvester`.
+///
+/// For example:
+///
+///     enum EffectQueue: EffectQueueProtocol {
+///         case `default`
+///         case request
+///
+///         var flattenStrategy: FlattenStrategy {
+///             switch self {
+///             case .default: return .merge
+///             case .request: return .latest
+///             }
+///         }
+///
+///         static var defaultEffectQueue: EffectQueue {
+///             .default
+///         }
+///     }
+///
+/// - Note: Use built-in `BasicEffectQueue` for simplest merging scenario.
 public protocol EffectQueueProtocol: Equatable, CaseIterable
 {
     var flattenStrategy: FlattenStrategy { get }
+
+    static var defaultEffectQueue: Self { get }
 }
 
-extension Never: EffectQueueProtocol
+// MARK: - BasicEffectQueue
+
+/// Basic single effect queue with `.merge` strategy.
+public struct BasicEffectQueue: EffectQueueProtocol
 {
-    public static var allCases: [Never]
+    public static var allCases: [BasicEffectQueue]
     {
-        return [Never]()
+        [.init()]
     }
 
     public var flattenStrategy: FlattenStrategy
     {
-        return .merge
-    }
-}
-
-// MARK: - EffectQueue
-
-/// Main effect queue that has `default` queue.
-internal enum EffectQueue<Queue>: EffectQueueProtocol
-    where Queue: EffectQueueProtocol
-{
-    case `default`
-    case custom(Queue)
-
-    public static var allCases: [EffectQueue]
-    {
-        return [.default] + Queue.allCases.map(EffectQueue.custom)
+        .merge
     }
 
-    public var flattenStrategy: FlattenStrategy
+    public static var defaultEffectQueue: Self
     {
-        switch self {
-        case .default:
-            return .merge
-        case let .custom(custom):
-            return custom.flattenStrategy
-        }
+        .init()
     }
 }
