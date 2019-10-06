@@ -23,14 +23,14 @@ public struct Effect<Input, Queue, ID>
     ///   - id: Effect identifier for cancelling running `producer`.
     public init(
         _ publisher: AnyPublisher<Input, Never>,
-        queue: Queue? = nil,
+        queue: Queue = .defaultEffectQueue,
         id: ID? = nil
         )
     {
         self.init(kind: .publisher(
             _Publisher(
                 publisher: publisher,
-                queue: queue.map(EffectQueue.custom) ?? .default,
+                queue: queue,
                 id: id
             )
         ))
@@ -115,7 +115,7 @@ extension Effect
         internal let publisher: AnyPublisher<Input, Never>
 
         /// Effect queue that associates with `publisher` to perform various `flattenStrategy`s.
-        internal let queue: EffectQueue<Queue>
+        internal let queue: Queue
 
         /// Effect identifier for cancelling running `publisher`.
         internal let id: ID?

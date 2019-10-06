@@ -10,7 +10,7 @@ class EffectMappingLatestSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
-        typealias EffectMapping = Harvester.EffectMapping<Queue, Never>
+        typealias EffectMapping = Harvester.EffectMapping<EffectQueue, Never>
 
         var inputs: PassthroughSubject<AuthInput, Never>!
         var harvester: Harvester!
@@ -93,12 +93,21 @@ class EffectMappingLatestSpec: QuickSpec
 
 // MARK: - Private
 
-private enum Queue: EffectQueueProtocol
+private enum EffectQueue: EffectQueueProtocol
 {
+    case `default`
     case request
 
     var flattenStrategy: FlattenStrategy
     {
-        return .latest
+        switch self {
+        case .default: return .merge
+        case .request: return .latest
+        }
+    }
+
+    static var defaultEffectQueue: EffectQueue
+    {
+        .default
     }
 }
