@@ -27,6 +27,26 @@ enum AuthInput: String, CustomStringConvertible
     var description: String { return self.rawValue }
 }
 
+/// Subset of `AuthInput` that can be sent from external.
+enum ExternalAuthInput
+{
+    case login
+    case logout
+    case forceLogout
+
+    static func toInternal(externalInput: ExternalAuthInput) -> AuthInput
+    {
+        switch externalInput {
+        case .login:
+            return .login
+        case .logout:
+            return .logout
+        case .forceLogout:
+            return .forceLogout
+        }
+    }
+}
+
 // MARK: CountState/Input
 
 typealias CountState = Int
@@ -49,4 +69,25 @@ enum MyState
 enum MyInput
 {
     case input0, input1, input2
+}
+
+// MARK: - RequestEffectQueue
+
+enum RequestEffectQueue: EffectQueueProtocol
+{
+    case `default`
+    case request
+
+    var flattenStrategy: FlattenStrategy
+    {
+        switch self {
+        case .default: return .merge
+        case .request: return .latest
+        }
+    }
+
+    static var defaultEffectQueue: RequestEffectQueue
+    {
+        .default
+    }
 }
