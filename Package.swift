@@ -23,10 +23,12 @@ let package = Package(
     ]
 )
 
+// `$ HARVEST_SPM_TEST=1 swift package generate-xcodeproj`
+//
 // NOTE:
 // `$ HARVEST_SPM_TEST=1 swift test` won't work since using Combine,
 // so instead comment-out this if-condition check to enable Xcode-testing.
-//if ProcessInfo.processInfo.environment.keys.contains("HARVEST_SPM_TEST") {
+if ProcessInfo.processInfo.environment.keys.contains("HARVEST_SPM_TEST") {
     package.targets.append(
         .testTarget(
             name: "HarvestTests",
@@ -44,4 +46,4 @@ let package = Package(
             .package(url: "https://github.com/mluisbrown/Thresher.git", .branch("master"))
         ]
     )
-//}
+}
