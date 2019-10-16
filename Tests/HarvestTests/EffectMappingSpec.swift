@@ -48,7 +48,7 @@ class EffectMappingSpec: QuickSpec
                 ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
+                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
 
                 harvester.replies
                     .sink { reply in
@@ -109,7 +109,7 @@ class EffectMappingSpec: QuickSpec
                         .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
-                let mapping: EffectMapping = { input, fromState in
+                let mapping: EffectMapping = .init { input, fromState in
                     switch (fromState, input) {
                         case (.loggedOut, .login):
                             return (.loggingIn, .init(loginOKPublisher))
@@ -200,7 +200,7 @@ class EffectMappingSpec: QuickSpec
                 ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
+                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
 
                 harvester.replies
                     .sink { reply in
