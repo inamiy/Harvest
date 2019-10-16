@@ -12,7 +12,7 @@ extension Harvester
     public convenience init<Inputs: Publisher>(
         state initialState: State,
         inputs inputSignal: Inputs,
-        mapping: @escaping Mapping,
+        mapping: Mapping,
         feedback: Feedback<Reply<Input, State>.Success, Input>
         )
         where Inputs.Output == Input, Inputs.Failure == Never
@@ -23,7 +23,7 @@ extension Harvester
             makeSignals: { from -> MakeSignals in
                 let mapped = from
                     .map { input, fromState in
-                        return (input, fromState, mapping(input, fromState))
+                        return (input, fromState, mapping.run(input, fromState))
                     }
 
                 let replies = mapped

@@ -128,7 +128,7 @@ class MappingSpec: QuickSpec
         describe("Func-based Mapping") {
 
             beforeEach {
-                let mapping: Mapping = { input, fromState in
+                let mapping: Mapping = .init { input, fromState in
                     switch (fromState, input) {
                         case (.loggedOut, .login):
                             return .loggingIn

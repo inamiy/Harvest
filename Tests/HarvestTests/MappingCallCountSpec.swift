@@ -30,7 +30,7 @@ class MappingCallCountSpec: QuickSpec
             beforeEach {
                 mappingCallCount = 0
 
-                let mapping: Mapping = { input, state in
+                let mapping: Mapping = .init { input, state in
                     mappingCallCount += 1
 
                     switch input {
