@@ -1,5 +1,7 @@
-extension Harvester {
+// MARK: - Mapping
 
+extension Harvester
+{
     /// Basic state-transition function type.
     public struct Mapping
     {
@@ -36,9 +38,13 @@ extension Harvester {
                 return nil
             }
         }
-
     }
+}
 
+// MARK: - EffectMapping
+
+extension Harvester
+{
     /// Transducer (input & output) mapping with
     /// **cold publisher** (additional effect) as output,
     /// which may emit next input values for continuous state-transitions.
@@ -68,5 +74,4 @@ extension Harvester {
             }
         }
     }
-
 }
