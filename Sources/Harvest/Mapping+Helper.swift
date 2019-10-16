@@ -111,33 +111,3 @@ public func any<T>(_: T) -> Bool
 {
     return true
 }
-
-/// Folds multiple `Harvester.Mapping`s into one (preceding mapping has higher priority).
-public func reduce<Input, State, Mappings: Sequence>(_ mappings: Mappings) -> Harvester<Input, State>.Mapping
-    where Mappings.Iterator.Element == Harvester<Input, State>.Mapping
-{
-    return .init { input, fromState in
-        for mapping in mappings {
-            if let toState = mapping.run(input, fromState) {
-                return toState
-            }
-        }
-        return nil
-    }
-}
-
-/// Folds multiple `Harvester.EffectMapping`s into one (preceding mapping has higher priority).
-public func reduce<Input, State, Mappings: Sequence, Queue, EffectID>(
-    _ mappings: Mappings
-    ) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
-    where Mappings.Iterator.Element == Harvester<Input, State>.EffectMapping<Queue, EffectID>
-{
-    return .init { input, fromState in
-        for mapping in mappings {
-            if let tuple = mapping.run(input, fromState) {
-                return tuple
-            }
-        }
-        return nil
-    }
-}

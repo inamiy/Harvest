@@ -48,7 +48,7 @@ class EffectMappingSpec: QuickSpec
                 ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
+                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
 
                 harvester.replies
                     .sink { reply in
@@ -200,7 +200,7 @@ class EffectMappingSpec: QuickSpec
                 ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
+                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
 
                 harvester.replies
                     .sink { reply in
