@@ -5,13 +5,13 @@ import Harvest
 public func lift<WholeInput, PartInput, State, Queue, EffectID>(
     input inputTraversal: AffineTraversal<WholeInput, PartInput>
 )
-    -> (_ mapping: @escaping Harvester<PartInput, State>.EffectMapping<Queue, EffectID>)
+    -> (_ mapping: Harvester<PartInput, State>.EffectMapping<Queue, EffectID>)
     -> Harvester<WholeInput, State>.EffectMapping<Queue, EffectID>
 {
     return { mapping in
-        return { wholeInput, state in
+        return .init { wholeInput, state in
             guard let partInput = inputTraversal.tryGet(wholeInput),
-                let (newState, effect) = mapping(partInput, state) else
+                let (newState, effect) = mapping.run(partInput, state) else
             {
                 return nil
             }
@@ -24,13 +24,13 @@ public func lift<WholeInput, PartInput, State, Queue, EffectID>(
 public func lift<WholeState, PartState, Input, Queue, EffectID>(
     state stateTraversal: AffineTraversal<WholeState, PartState>
 )
-    -> (_ mapping: @escaping Harvester<Input, PartState>.EffectMapping<Queue, EffectID>)
+    -> (_ mapping: Harvester<Input, PartState>.EffectMapping<Queue, EffectID>)
     -> Harvester<Input, WholeState>.EffectMapping<Queue, EffectID>
 {
     return { mapping in
-        return { input, wholeState in
+        return .init { input, wholeState in
             guard let partState = stateTraversal.tryGet(wholeState),
-                let (newPartState, effect) = mapping(input, partState) else
+                let (newPartState, effect) = mapping.run(input, partState) else
             {
                 return nil
             }
@@ -47,7 +47,7 @@ public func lift<WholeInput, PartInput, WholeState, PartState, Queue, EffectID>(
     input inputTraversal: AffineTraversal<WholeInput, PartInput>,
     state stateTraversal: AffineTraversal<WholeState, PartState>
 )
-    -> (_ mapping: @escaping Harvester<PartInput, PartState>.EffectMapping<Queue, EffectID>)
+    -> (_ mapping: Harvester<PartInput, PartState>.EffectMapping<Queue, EffectID>)
     -> Harvester<WholeInput, WholeState>.EffectMapping<Queue, EffectID>
 {
     return { mapping in

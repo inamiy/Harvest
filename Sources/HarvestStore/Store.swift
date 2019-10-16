@@ -16,7 +16,7 @@ public final class Store<Input, State>: ObservableObject
     public init<Queue: EffectQueueProtocol, EffectID>(
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .none,
-        mapping: @escaping Harvester<Input, State>.EffectMapping<Queue, EffectID>
+        mapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>
     )
     {
         self.harvester = Harvester(
@@ -92,19 +92,19 @@ extension Store
 extension Store
 {
     fileprivate typealias EffectMapping<Queue, EffectID> =
-        (BindableInput, State) -> (State, Effect<BindableInput, Queue, EffectID>)?
+        Harvester<BindableInput, State>.EffectMapping<Queue, EffectID>
         where Queue: EffectQueueProtocol, EffectID: Equatable
 }
 
 /// Lifts from `Harvester.EffectMapping` to `Store.EffectMapping`, converting from `Input` to `Store.BindableInput`.
 private func lift<Input, State, Queue: EffectQueueProtocol, EffectID>(
-    effectMapping: @escaping Harvester<Input, State>.EffectMapping<Queue, EffectID>
+    effectMapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>
 ) -> Store<Input, State>.EffectMapping<Queue, EffectID>
 {
-    { input, state in
+    .init { input, state in
         switch input {
         case let .input(innerInput):
-            guard let (newState, effect) = effectMapping(innerInput, state) else {
+            guard let (newState, effect) = effectMapping.run(innerInput, state) else {
                 return nil
             }
             return (newState, effect.mapInput(Store<Input, State>.BindableInput.input))
