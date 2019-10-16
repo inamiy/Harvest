@@ -29,7 +29,7 @@ class AnyMappingSpec: QuickSpec
                     any     | .state1 => .state2
                 ]
 
-                harvester = Harvester(state: .state0, inputs: inputs, mapping: reduce(mappings))
+                harvester = Harvester(state: .state0, inputs: inputs, mapping: .reduce(mappings))
 
                 harvester.replies
                     .sink { reply in

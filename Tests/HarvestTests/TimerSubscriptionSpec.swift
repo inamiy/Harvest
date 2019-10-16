@@ -38,7 +38,7 @@ class TimerSubscriptionSpec: QuickSpec
                     .map(TimerInput.tick)
                     .eraseToAnyPublisher()
 
-                let mapping: EffectMapping = { input, state in
+                let mapping: EffectMapping = .init { input, state in
                     switch input {
                     case .start:
                         return (state, Effect(timerPublisher, id: "timer"))

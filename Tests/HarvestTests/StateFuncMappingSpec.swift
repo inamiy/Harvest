@@ -27,7 +27,7 @@ class StateFuncMappingSpec: QuickSpec
                 mappings += [ .decrement | { $0 - 1 } | .empty ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: 0, inputs: inputs, mapping: reduce(mappings))
+                harvester = Harvester(state: 0, inputs: inputs, mapping: .reduce(mappings))
             }
 
             it("`.increment` and `.decrement` succeed") {

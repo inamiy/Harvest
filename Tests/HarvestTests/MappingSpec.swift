@@ -39,7 +39,7 @@ class MappingSpec: QuickSpec
                 ]
 
                 // NOTE: Use `concat` to combine all mappings.
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: reduce(mappings))
+                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
 
                 harvester.replies
                     .sink { reply in
@@ -128,7 +128,7 @@ class MappingSpec: QuickSpec
         describe("Func-based Mapping") {
 
             beforeEach {
-                let mapping: Mapping = { input, fromState in
+                let mapping: Mapping = .init { input, fromState in
                     switch (fromState, input) {
                         case (.loggedOut, .login):
                             return .loggingIn

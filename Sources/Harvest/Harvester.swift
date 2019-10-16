@@ -20,14 +20,14 @@ public final class Harvester<Input, State>
     public convenience init<Inputs: Publisher>(
         state initialState: State,
         inputs inputSignal: Inputs,
-        mapping: @escaping Mapping
+        mapping: Mapping
         )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
         self.init(
             state: initialState,
             inputs: inputSignal,
-            mapping: { mapping($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.none) } }
+            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.none) } }
         )
     }
 
@@ -42,7 +42,7 @@ public final class Harvester<Input, State>
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .none,
         inputs inputSignal: Inputs,
-        mapping: @escaping EffectMapping<Queue, EffectID>
+        mapping: EffectMapping<Queue, EffectID>
         )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
@@ -52,8 +52,9 @@ public final class Harvester<Input, State>
             makeSignals: { from -> MakeSignals in
                 let mapped = from
                     .map { input, fromState in
-                        return (input, fromState, mapping(input, fromState))
+                        return (input, fromState, mapping.run(input, fromState))
                     }
+                    .share()
 
                 let replies = mapped
                     .map { input, fromState, mapped -> Reply<Input, State> in
@@ -72,7 +73,7 @@ public final class Harvester<Input, State>
                         return effect
                     }
                     .prepend(initialEffect)
-                    .eraseToAnyPublisher()
+                    .share()
 
                 let publishers = effects.compactMap { $0.publisher }
                 let cancels = effects.compactMap { $0.cancel }
@@ -117,7 +118,6 @@ public final class Harvester<Input, State>
                 let fromState = self.state
                 return (input, fromState)
             }
-            .share()
             .eraseToAnyPublisher()
 
         let (replies, effects) = makeSignals(mapped)
@@ -176,17 +176,4 @@ extension Harvester: ObservableObject
     {
         self.$state
     }
-}
-
-extension Harvester {
-
-    /// Basic state-transition function type.
-    public typealias Mapping = (Input, State) -> State?
-
-    /// Transducer (input & output) mapping with
-    /// **cold publisher** (additional effect) as output,
-    /// which may emit next input values for continuous state-transitions.
-    public typealias EffectMapping<Queue, EffectID> = (Input, State) -> (State, Effect<Input, Queue, EffectID>)?
-        where Queue: EffectQueueProtocol, EffectID: Equatable
-
 }
