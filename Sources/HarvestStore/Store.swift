@@ -10,6 +10,9 @@ public final class Store<Input, State>: ObservableObject
 
     private let inputs = PassthroughSubject<BindableInput, Never>()
 
+//    @Binding
+//    public private(set) var state: State
+
     public init<Queue: EffectQueueProtocol, EffectID>(
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .none,
@@ -23,39 +26,58 @@ public final class Store<Input, State>: ObservableObject
             mapping: lift(effectMapping: mapping)
         )
 
-        self._state = Binding<State>(
-            get: { [harvester] in
-                harvester.state
-            },
-            set: { [inputs] in
-                inputs.send(.state($0))
-            }
-        )
-    }
-
-    /// Current state.
-    @Binding
-    public private(set) var state: State
-
-    /// Sends input.
-    public func send(_ input: Input)
-    {
-        self.inputs.send(.input(input))
+        // Comment-out:
+        // Stored binding doesn't work in SwiftUI for some reason.
+        // Use `stateBinding` (computed property) instead.
+        //
+//        self._state = Binding<State>(
+//            get: { [harvester] in
+//                harvester.state
+//            },
+//            set: { [inputs] in
+//                inputs.send(.state($0))
+//            }
+//        )
     }
 
     /// Lightweight `Store` proxy without duplicating internal state.
     public var proxy: Proxy
     {
-        Proxy(state: self.$state, send: self.send)
+        Proxy(state: self.stateBinding, send: self.send)
     }
 
     public var objectWillChange: Published<State>.Publisher
     {
         self.harvester.$state
     }
+
 }
 
-// MARK: - Store.BindableInput
+// MARK: - Private
+
+// NOTE:
+// These are marked as `private` since passing `Store.Proxy` instead of `Store`
+// to SwiftUI's `View`s is preferred.
+// To call these methods, use `proxy` instead.
+extension Store
+{
+    private func send(_ input: Input)
+    {
+        self.inputs.send(.input(input))
+    }
+
+    private var stateBinding: Binding<State>
+    {
+        return Binding<State>(
+            get: {
+                self.harvester.state
+            },
+            set: {
+                self.inputs.send(.state($0))
+            }
+        )
+    }
+}
 
 extension Store
 {
@@ -67,11 +89,10 @@ extension Store
     }
 }
 
-// MARK: - Private
-
 extension Store
 {
-    fileprivate typealias EffectMapping<Queue, EffectID> = (BindableInput, State) -> (State, Effect<BindableInput, Queue, EffectID>)?
+    fileprivate typealias EffectMapping<Queue, EffectID> =
+        (BindableInput, State) -> (State, Effect<BindableInput, Queue, EffectID>)?
         where Queue: EffectQueueProtocol, EffectID: Equatable
 }
 
