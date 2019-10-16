@@ -35,6 +35,7 @@ extension Harvester
                             return .failure((input, fromState))
                         }
                     }
+                    .share()
                     .eraseToAnyPublisher()
 
                 let effects = feedback.transform(replies.compactMap { $0.success }.eraseToAnyPublisher())

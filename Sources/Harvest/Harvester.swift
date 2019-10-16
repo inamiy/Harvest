@@ -53,6 +53,7 @@ public final class Harvester<Input, State>
                     .map { input, fromState in
                         return (input, fromState, mapping(input, fromState))
                     }
+                    .share()
 
                 let replies = mapped
                     .map { input, fromState, mapped -> Reply<Input, State> in
@@ -71,7 +72,7 @@ public final class Harvester<Input, State>
                         return effect
                     }
                     .prepend(initialEffect)
-                    .eraseToAnyPublisher()
+                    .share()
 
                 let publishers = effects.compactMap { $0.publisher }
                 let cancels = effects.compactMap { $0.cancel }
@@ -116,7 +117,6 @@ public final class Harvester<Input, State>
                 let fromState = self.state
                 return (input, fromState)
             }
-            .share()
             .eraseToAnyPublisher()
 
         let (replies, effects) = makeSignals(mapped)
