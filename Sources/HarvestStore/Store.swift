@@ -10,27 +10,32 @@ public final class Store<Input, State>: ObservableObject
 
     private let inputs = PassthroughSubject<BindableInput, Never>()
 
-    private var cancellable = Set<AnyCancellable>()
-
     public init<Queue: EffectQueueProtocol, EffectID>(
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .none,
         mapping: @escaping Harvester<Input, State>.EffectMapping<Queue, EffectID>
     )
     {
-        harvester = Harvester(
+        self.harvester = Harvester(
             state: initialState,
             effect: initialEffect.mapInput(Store<Input, State>.BindableInput.input),
-            inputs: inputs,
+            inputs: self.inputs,
             mapping: lift(effectMapping: mapping)
+        )
+
+        self._state = Binding<State>(
+            get: { [harvester] in
+                harvester.state
+            },
+            set: { [inputs] in
+                inputs.send(.state($0))
+            }
         )
     }
 
     /// Current state.
-    public var state: State
-    {
-        self.harvester.state
-    }
+    @Binding
+    public private(set) var state: State
 
     /// Sends input.
     public func send(_ input: Input)
@@ -38,30 +43,10 @@ public final class Store<Input, State>: ObservableObject
         self.inputs.send(.input(input))
     }
 
-    /// Direct state binding.
-    public var binding: Binding<State>
+    /// Lightweight `Store` proxy without duplicating internal state.
+    public var proxy: Proxy
     {
-        return Binding<State>(
-            get: {
-                self.harvester.state
-            },
-            set: {
-                self.inputs.send(.state($0))
-            }
-        )
-    }
-
-    /// Indirect state-to-input conversion binding.
-    public func binding(to toInput: @escaping (State) -> Input) -> Binding<State>
-    {
-        return Binding<State>(
-            get: {
-                self.harvester.state
-            },
-            set: {
-                self.inputs.send(.input(toInput($0)))
-            }
-        )
+        Proxy(state: self.$state, send: self.send)
     }
 
     public var objectWillChange: Published<State>.Publisher
@@ -75,7 +60,7 @@ public final class Store<Input, State>: ObservableObject
 extension Store
 {
     /// `input` as indirect messaging, or `state` that can directly replace `harvester.state` via SwiftUI 2-way binding.
-    public enum BindableInput
+    fileprivate enum BindableInput
     {
         case input(Input)
         case state(State)
