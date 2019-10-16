@@ -11,6 +11,12 @@ extension Store
 
         public let send: (Input) -> Void
 
+        public init(state: Binding<State>, send: @escaping (Input) -> Void)
+        {
+            self._state = state
+            self.send = send
+        }
+
         /// Transforms `<Input, State>` to `<Input, SubState>` using keyPath `@dynamicMemberLookup`.
         public subscript<SubState>(
             dynamicMember keyPath: WritableKeyPath<State, SubState>
