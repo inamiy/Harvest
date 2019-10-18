@@ -60,7 +60,8 @@ class FeedbackSpec: QuickSpec
                             filter: { $0.input == AuthInput.logout },
                             produce: { _ in logoutOKProducer }
                         )
-                    ])
+                    ]),
+                    scheduler: ImmediateScheduler.shared
                 )
 
                 harvester.replies

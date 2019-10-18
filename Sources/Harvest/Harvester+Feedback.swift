@@ -9,12 +9,16 @@ extension Harvester
     ///   - input: External "hot" input stream that `Harvester` receives.
     ///   - mapping: Simple `Mapping` that designates next state only (no additional effect).
     ///   - feedback: `Publisher` transformer that performs side-effect and emits next input.
-    public convenience init<Inputs: Publisher>(
+    ///   - scheduler: Scheduler for next inputs from `Feedback`.
+    ///   - options: `scheduler` options.
+    public convenience init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
         inputs inputSignal: Inputs,
         mapping: Mapping,
-        feedback: Feedback<Reply<Input, State>.Success, Input>
-        )
+        feedback: Feedback<Reply<Input, State>.Success, Input>,
+        scheduler: S,
+        options: S.SchedulerOptions? = nil
+    )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
         self.init(
@@ -41,7 +45,8 @@ extension Harvester
                 let effects = feedback.transform(replies.compactMap { $0.success }.eraseToAnyPublisher())
 
                 return (replies, effects)
-            }
+            },
+            scheduler: scheduler
         )
     }
 }

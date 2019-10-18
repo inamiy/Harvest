@@ -54,7 +54,8 @@ class TimerSubscriptionSpec: QuickSpec
                 harvester = Harvester(
                     state: 0,
                     inputs: inputs,
-                    mapping: mapping
+                    mapping: mapping,
+                    scheduler: ImmediateScheduler.shared
                 )
 
                 harvester.replies
