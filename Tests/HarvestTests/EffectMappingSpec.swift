@@ -37,7 +37,7 @@ class EffectMappingSpec: QuickSpec
                 /// Sends `.logoutOK` after delay, simulating async work during `.loggingOut`.
                 let logoutOKPublisher =
                     Just(AuthInput.logoutOK)
-                        .delay(for: 1, scheduler: testScheduler!)
+                        .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
                 let mappings: [EffectMapping] = [
@@ -48,7 +48,12 @@ class EffectMappingSpec: QuickSpec
                 ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: .reduce(mappings),
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink { reply in
@@ -125,7 +130,12 @@ class EffectMappingSpec: QuickSpec
                 }
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: mapping)
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: mapping,
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink { reply in
@@ -200,7 +210,12 @@ class EffectMappingSpec: QuickSpec
                 ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: .reduce(mappings),
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink { reply in

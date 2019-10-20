@@ -17,17 +17,23 @@ public final class Harvester<Input, State>
     ///   - state: Initial state.
     ///   - input: External "hot" input stream that `Harvester` receives.
     ///   - mapping: Simple `Mapping` that designates next state only (no additional effect).
-    public convenience init<Inputs: Publisher>(
+    ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
+    ///   - options: `scheduler` options.
+    public convenience init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
         inputs inputSignal: Inputs,
-        mapping: Mapping
-        )
+        mapping: Mapping,
+        scheduler: S,
+        options: S.SchedulerOptions? = nil
+    )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
         self.init(
             state: initialState,
             inputs: inputSignal,
-            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.none) } }
+            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.none) } },
+            scheduler: scheduler,
+            options: options
         )
     }
 
@@ -38,12 +44,16 @@ public final class Harvester<Input, State>
     ///   - effect: Initial effect.
     ///   - input: External "hot" input stream that `Harvester` receives.
     ///   - mapping: `EffectMapping` that designates next state and also generates additional effect.
-    public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID>(
+    ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
+    ///   - options: `scheduler` options.
+    public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .none,
         inputs inputSignal: Inputs,
-        mapping: EffectMapping<Queue, EffectID>
-        )
+        mapping: EffectMapping<Queue, EffectID>,
+        scheduler: S,
+        options: S.SchedulerOptions? = nil
+    )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
         self.init(
@@ -87,8 +97,12 @@ public final class Harvester<Input, State>
                                     return publisher.publisher
                                 }
 
-                                let until = cancels.filter { $0(publisherID) }.map { _ in }
-                                return publisher.publisher.prefix(untilOutputFrom: until)
+                                let until = cancels
+                                    .filter { $0(publisherID) }
+                                    .map { _ in }
+
+                                return publisher.publisher
+                                    .prefix(untilOutputFrom: until)
                                     .eraseToAnyPublisher()
                             }
                     }
@@ -96,24 +110,27 @@ public final class Harvester<Input, State>
                     .eraseToAnyPublisher()
 
                 return (replies, effectInputs)
-            }
+            },
+            scheduler: scheduler,
+            options: options
         )
     }
 
-    internal init<Inputs: Publisher>(
+    internal init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
         inputs inputSignal: Inputs,
-        makeSignals: (AnyPublisher<(Input, State), Never>) -> MakeSignals
-        )
+        makeSignals: (AnyPublisher<(Input, State), Never>) -> MakeSignals,
+        scheduler: S,
+        options: S.SchedulerOptions? = nil
+    )
         where Inputs.Output == Input, Inputs.Failure == Never
     {
         self._state = Published(initialValue: initialState)
 
         let effectInputs = PassthroughSubject<Input, Never>()
 
-        let mergedInputs = Publishers.Merge(inputSignal, effectInputs)
-
-        let mapped = mergedInputs
+        let mapped = Publishers.Merge(inputSignal, effectInputs)
+            .receive(on: scheduler, options: options)
             .map { [unowned self] input -> (Input, State) in
                 let fromState = self.state
                 return (input, fromState)
@@ -131,7 +148,8 @@ public final class Harvester<Input, State>
         replies.sink(receiveValue: self._replies.send)
             .store(in: &self._cancellables)
 
-        let effectCancellable = effects.subscribe(effectInputs)
+        let effectCancellable = effects
+            .subscribe(effectInputs)
 
         effectCancellable
             .store(in: &self._cancellables)

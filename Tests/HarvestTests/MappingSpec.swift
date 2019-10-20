@@ -39,7 +39,12 @@ class MappingSpec: QuickSpec
                 ]
 
                 // NOTE: Use `concat` to combine all mappings.
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: .reduce(mappings),
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink { reply in
@@ -148,7 +153,12 @@ class MappingSpec: QuickSpec
                     }
                 }
 
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: mapping)
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: mapping,
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink { reply in

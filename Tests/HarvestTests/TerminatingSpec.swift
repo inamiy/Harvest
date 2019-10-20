@@ -48,7 +48,12 @@ class TerminatingSpec: QuickSpec
                 ]
 
                 // strategy = `.merge`
-                harvester = Harvester(state: .state0, inputs: inputs, mapping: .reduce(mappings))
+                harvester = Harvester(
+                    state: .state0,
+                    inputs: inputs,
+                    mapping: .reduce(mappings),
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink(
