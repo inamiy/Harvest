@@ -17,7 +17,7 @@ public final class Store<Input, State>: ObservableObject
 
     public init<Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
-        effect initialEffect: Effect<Input, Queue, EffectID> = .none,
+        effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
         mapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>,
         scheduler: S,
         options: S.SchedulerOptions? = nil
@@ -115,7 +115,7 @@ private func lift<Input, State, Queue: EffectQueueProtocol, EffectID>(
             return (newState, effect.mapInput(Store<Input, State>.BindableInput.input))
 
         case let .state(state):
-            return (state, nil)
+            return (state, .empty)
         }
     }
 }

@@ -243,5 +243,121 @@ class MappingSpec: QuickSpec
             }
 
         }
+
+        describe("Inout-Func-based Mapping") {
+
+            beforeEach {
+                let mapping: Mapping = .makeInout { input, state in
+                    switch (state, input) {
+                    case (.loggedOut, .login):
+                        state = .loggingIn
+                    case (.loggingIn, .loginOK):
+                        state = .loggedIn
+                    case (.loggedIn, .logout):
+                        state = .loggingOut
+                    case (.loggingOut, .logoutOK):
+                        state = .loggedOut
+
+                    // ForceLogout
+                    case (.loggingIn, .forceLogout), (.loggedIn, .forceLogout):
+                        state = .loggingOut
+
+                    default:
+                        break
+                    }
+                }
+
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: mapping,
+                    scheduler: ImmediateScheduler.shared
+                )
+
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                }
+                .store(in: &cancellables)
+            }
+
+            it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
+                expect(harvester.state) == .loggedOut
+                expect(lastReply).to(beNil())
+
+                inputs.send(.login)
+
+                expect(lastReply?.input) == .login
+                expect(lastReply?.fromState) == .loggedOut
+                expect(lastReply?.toState) == .loggingIn
+                expect(harvester.state) == .loggingIn
+
+                inputs.send(.loginOK)
+
+                expect(lastReply?.input) == .loginOK
+                expect(lastReply?.fromState) == .loggingIn
+                expect(lastReply?.toState) == .loggedIn
+                expect(harvester.state) == .loggedIn
+
+                inputs.send(.logout)
+
+                expect(lastReply?.input) == .logout
+                expect(lastReply?.fromState) == .loggedIn
+                expect(lastReply?.toState) == .loggingOut
+                expect(harvester.state) == .loggingOut
+
+                inputs.send(.logoutOK)
+
+                expect(lastReply?.input) == .logoutOK
+                expect(lastReply?.fromState) == .loggingOut
+                expect(lastReply?.toState) == .loggedOut
+                expect(harvester.state) == .loggedOut
+            }
+
+            it("`LoggedOut => LoggingIn ==(ForceLogout)==> LoggingOut => LoggedOut` succeed") {
+                expect(harvester.state) == .loggedOut
+                expect(lastReply).to(beNil())
+
+                inputs.send(.login)
+
+                expect(lastReply?.input) == .login
+                expect(lastReply?.fromState) == .loggedOut
+                expect(lastReply?.toState) == .loggingIn
+                expect(harvester.state) == .loggingIn
+
+                inputs.send(.forceLogout)
+
+                expect(lastReply?.input) == .forceLogout
+                expect(lastReply?.fromState) == .loggingIn
+                expect(lastReply?.toState) == .loggingOut
+                expect(harvester.state) == .loggingOut
+
+                // fails
+                inputs.send(.loginOK)
+
+                expect(lastReply?.input) == .loginOK
+                expect(lastReply?.fromState) == .loggingOut
+                //expect(lastReply?.toState).to(beNil())
+                expect(lastReply?.toState) == .loggingOut // Transition succeeds without changing state.
+                expect(harvester.state) == .loggingOut
+
+                // fails
+                inputs.send(.logout)
+
+                expect(lastReply?.input) == .logout
+                expect(lastReply?.fromState) == .loggingOut
+                //expect(lastReply?.toState).to(beNil())
+                expect(lastReply?.toState) == .loggingOut // Transition succeeds without changing state.
+                expect(harvester.state) == .loggingOut
+
+                inputs.send(.logoutOK)
+
+                expect(lastReply?.input) == .logoutOK
+                expect(lastReply?.fromState) == .loggingOut
+                expect(lastReply?.toState) == .loggedOut
+                expect(harvester.state) == .loggedOut
+            }
+
+        }
     }
 }

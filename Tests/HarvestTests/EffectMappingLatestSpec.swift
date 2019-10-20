@@ -42,9 +42,9 @@ class EffectMappingLatestSpec: QuickSpec
 
                 let mappings: [EffectMapping] = [
                     .login    | .loggedOut  => .loggingIn  | Effect(loginOKProducer, queue: .request),
-                    .loginOK  | .loggingIn  => .loggedIn   | nil,
+                    .loginOK  | .loggingIn  => .loggedIn   | .empty,
                     .logout   | .loggedIn   => .loggingOut | Effect(logoutOKProducer, queue: .request),
-                    .logoutOK | .loggingOut => .loggedOut  | nil
+                    .logoutOK | .loggingOut => .loggedOut  | .empty
                 ]
 
                 harvester = Harvester(

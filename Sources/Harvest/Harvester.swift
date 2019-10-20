@@ -31,7 +31,7 @@ public final class Harvester<Input, State>
         self.init(
             state: initialState,
             inputs: inputSignal,
-            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.none) } },
+            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.empty) } },
             scheduler: scheduler,
             options: options
         )
@@ -48,7 +48,7 @@ public final class Harvester<Input, State>
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
-        effect initialEffect: Effect<Input, Queue, EffectID> = .none,
+        effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
         inputs inputSignal: Inputs,
         mapping: EffectMapping<Queue, EffectID>,
         scheduler: S,
@@ -79,7 +79,7 @@ public final class Harvester<Input, State>
 
                 let effects = mapped
                     .compactMap { _, _, mapped -> Effect<Input, Queue, EffectID> in
-                        guard case let .some(_, effect) = mapped else { return .none }
+                        guard case let .some(_, effect) = mapped else { return .empty }
                         return effect
                     }
                     .prepend(initialEffect)

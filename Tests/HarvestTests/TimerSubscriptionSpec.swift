@@ -44,7 +44,7 @@ class TimerSubscriptionSpec: QuickSpec
                         return (state, Effect(timerPublisher, id: "timer"))
 
                     case let .tick(newState):
-                        return (newState, .none)
+                        return (newState, .empty)
 
                     case .stop:
                         return (state, Effect.cancel("timer"))

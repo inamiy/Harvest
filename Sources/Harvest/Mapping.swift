@@ -12,12 +12,36 @@ extension Harvester
             self.run = run
         }
 
+        /// `inout`-function initializer.
+        /// - Note: Added different name than `init` to disambiguate.
+        /// - Note: `(Input, inout State) -> Void` rather than `-> Void?` leads state-transition to be always successful.
+        public static func makeInout(_ run: @escaping (Input, inout State) -> Void)
+            -> Mapping
+        {
+            return .init { input, state in
+                var state = state
+                run(input, &state)
+
+                // NOTE:
+                // Below code is ideal, but `(Input, inout State) -> Void?` type signature tends to become
+                // hard to implement, so in this method's `run`, we ignore return type's `Optional`.
+//                if let _ = run(input, &state) {
+//                    return state
+//                }
+//                else {
+//                    return nil
+//                }
+
+                return state
+            }
+        }
+
         /// Converts `Mapping` to `EffectMapping`.
         public func toEffectMapping<Queue, EffectID>() -> EffectMapping<Queue, EffectID>
         {
             .init { input, state in
                 if let toState = self.run(input, state) {
-                    return (toState, .none)
+                    return (toState, .empty)
                 }
                 else {
                     return nil
@@ -56,6 +80,22 @@ extension Harvester
         public init(_ run: @escaping (Input, State) -> (State, Effect<Input, Queue, EffectID>)?)
         {
             self.run = run
+        }
+
+        /// `inout`-function initializer.
+        /// - Note: Added different name than `init` to disambiguate.
+        public static func makeInout(_ run: @escaping (Input, inout State) -> Effect<Input, Queue, EffectID>?)
+            -> EffectMapping<Queue, EffectID>
+        {
+            return .init { input, state in
+                var state = state
+                if let effect = run(input, &state) {
+                    return (state, effect)
+                }
+                else {
+                    return nil
+                }
+            }
         }
 
         public func mapQueue<Queue2>(_ f: @escaping (Queue) -> Queue2)
