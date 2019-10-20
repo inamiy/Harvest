@@ -75,8 +75,38 @@ public struct Effect<Input, Queue, ID>
             return .cancel(predicate)
         }
     }
-}
 
+    public func mapQueue<Queue2>(_ f: @escaping (Queue) -> Queue2) -> Effect<Input, Queue2, ID>
+    {
+        switch self.kind {
+        case let .publisher(publisher):
+            return .init(kind: .publisher(Effect<Input, Queue2, ID>._Publisher(
+                publisher: publisher.publisher,
+                queue: f(publisher.queue),
+                id: publisher.id
+            )))
+        case let .cancel(predicate):
+            return .cancel(predicate)
+        }
+    }
+
+    public func invmapID<ID2>(
+        _ forward: @escaping (ID) -> ID2,
+        _ backword: @escaping (ID2) -> ID
+    ) -> Effect<Input, Queue, ID2>
+    {
+        switch self.kind {
+        case let .publisher(publisher):
+            return .init(kind: .publisher(Effect<Input, Queue, ID2>._Publisher(
+                publisher: publisher.publisher,
+                queue: publisher.queue,
+                id: publisher.id.map(forward)
+            )))
+        case let .cancel(predicate):
+            return .cancel { predicate(backword($0)) }
+        }
+    }
+}
 
 extension Effect: ExpressibleByNilLiteral
 {
