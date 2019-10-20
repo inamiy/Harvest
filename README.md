@@ -104,6 +104,7 @@ let harvester = Harvester(
     state: .loggedOut,
     input: inputs,
     mapping: .reduce(mappings),  // combine mappings using `reduce` helper
+    scheduler: DispatchQueue.main
 )
 
 // Observe state-transition replies (`.success` or `.failure`).
