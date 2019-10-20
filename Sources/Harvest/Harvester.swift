@@ -16,7 +16,7 @@ public final class Harvester<Input, State>
     ///   - state: Initial state.
     ///   - input: External "hot" input stream that `Harvester` receives.
     ///   - mapping: Simple `Mapping` that designates next state only (no additional effect).
-    ///   - scheduler: Scheduler for next inputs from `Effect`.
+    ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
@@ -43,7 +43,7 @@ public final class Harvester<Input, State>
     ///   - effect: Initial effect.
     ///   - input: External "hot" input stream that `Harvester` receives.
     ///   - mapping: `EffectMapping` that designates next state and also generates additional effect.
-    ///   - scheduler: Scheduler for next inputs from `Effect`.
+    ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
@@ -129,6 +129,7 @@ public final class Harvester<Input, State>
         let effectInputs = PassthroughSubject<Input, Never>()
 
         let mapped = Publishers.Merge(inputSignal, effectInputs)
+            .receive(on: scheduler, options: options)
             .map { [unowned self] input -> (Input, State) in
                 let fromState = self.state
                 return (input, fromState)
@@ -147,7 +148,6 @@ public final class Harvester<Input, State>
             .store(in: &self._cancellables)
 
         let effectCancellable = effects
-            .receive(on: scheduler, options: options)
             .subscribe(effectInputs)
 
         effectCancellable
