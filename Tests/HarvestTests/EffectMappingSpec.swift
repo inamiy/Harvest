@@ -119,11 +119,11 @@ class EffectMappingSpec: QuickSpec
                         case (.loggedOut, .login):
                             return (.loggingIn, .init(loginOKPublisher))
                         case (.loggingIn, .loginOK):
-                            return (.loggedIn, nil)
+                            return (.loggedIn, .empty)
                         case (.loggedIn, .logout):
                             return (.loggingOut, .init(logoutOKPublisher))
                         case (.loggingOut, .logoutOK):
-                            return (.loggedOut, nil)
+                            return (.loggedOut, .empty)
                         default:
                             return nil
                     }
@@ -142,6 +142,92 @@ class EffectMappingSpec: QuickSpec
                         lastReply = reply
                     }
                     .store(in: &cancellables)
+            }
+
+            it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {
+                expect(harvester.state) == .loggedOut
+                expect(lastReply).to(beNil())
+
+                inputs.send(.login)
+
+                expect(lastReply?.input) == .login
+                expect(lastReply?.fromState) == .loggedOut
+                expect(lastReply?.toState) == .loggingIn
+                expect(harvester.state) == .loggingIn
+
+                // `loginOKPublisher` will automatically send `.loginOK`
+                testScheduler.advance(by: 1)
+
+                expect(lastReply?.input) == .loginOK
+                expect(lastReply?.fromState) == .loggingIn
+                expect(lastReply?.toState) == .loggedIn
+                expect(harvester.state) == .loggedIn
+
+                inputs.send(.logout)
+
+                expect(lastReply?.input) == .logout
+                expect(lastReply?.fromState) == .loggedIn
+                expect(lastReply?.toState) == .loggingOut
+                expect(harvester.state) == .loggingOut
+
+                // `logoutOKPublisher` will automatically send `.logoutOK`
+                testScheduler.advance(by: 1)
+
+                expect(lastReply?.input) == .logoutOK
+                expect(lastReply?.fromState) == .loggingOut
+                expect(lastReply?.toState) == .loggedOut
+                expect(harvester.state) == .loggedOut
+            }
+
+        }
+
+        describe("Inout-Func-based EffectMapping") {
+
+            beforeEach {
+                /// Sends `.loginOK` after delay, simulating async work during `.loggingIn`.
+                let loginOKPublisher =
+                    Just(AuthInput.loginOK)
+                        .delay(for: 1, scheduler: testScheduler)
+                        .eraseToAnyPublisher()
+
+                /// Sends `.logoutOK` after delay, simulating async work during `.loggingOut`.
+                let logoutOKPublisher =
+                    Just(AuthInput.logoutOK)
+                        .delay(for: 1, scheduler: testScheduler)
+                        .eraseToAnyPublisher()
+
+                let mapping: EffectMapping = .makeInout { input, state in
+                    switch (state, input) {
+                    case (.loggedOut, .login):
+                        state = .loggingIn
+                        return .init(loginOKPublisher)
+                    case (.loggingIn, .loginOK):
+                        state = .loggedIn
+                        return .empty
+                    case (.loggedIn, .logout):
+                        state = .loggingOut
+                        return .init(logoutOKPublisher)
+                    case (.loggingOut, .logoutOK):
+                        state = .loggedOut
+                        return .empty
+                    default:
+                        return nil
+                    }
+                }
+
+                // strategy = `.merge`
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: mapping,
+                    scheduler: ImmediateScheduler.shared
+                )
+
+                harvester.replies
+                    .sink { reply in
+                        lastReply = reply
+                }
+                .store(in: &cancellables)
             }
 
             it("`LoggedOut => LoggingIn => LoggedIn => LoggingOut => LoggedOut` succeed") {

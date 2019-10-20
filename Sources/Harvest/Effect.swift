@@ -55,7 +55,7 @@ public struct Effect<Input, Queue, ID>
     }
 
     /// Empty side-effect.
-    public static var none: Effect<Input, Queue, ID>
+    public static var empty: Effect<Input, Queue, ID>
     {
         return Effect(.empty)
     }
@@ -105,14 +105,6 @@ public struct Effect<Input, Queue, ID>
         case let .cancel(predicate):
             return .cancel { predicate(backword($0)) }
         }
-    }
-}
-
-extension Effect: ExpressibleByNilLiteral
-{
-    public init(nilLiteral: ())
-    {
-        self = .none
     }
 }
 

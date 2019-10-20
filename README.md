@@ -79,9 +79,9 @@ let mappings: [EffectMapping] = [
   /*  Input   |   fromState => toState     |      Effect       */
   /* ----------------------------------------------------------*/
     .login    | .loggedOut  => .loggingIn  | Effect(loginOKPublisher, queue: .request),
-    .loginOK  | .loggingIn  => .loggedIn   | nil,
+    .loginOK  | .loggingIn  => .loggedIn   | .empty,
     .logout   | .loggedIn   => .loggingOut | Effect(logoutOKPublisher, queue: .request),
-    .logoutOK | .loggingOut => .loggedOut  | nil,
+    .logoutOK | .loggingOut => .loggedOut  | .empty,
 
     .forceLogout | canForceLogout => .loggingOut | Effect(forceLogoutOKPublisher, queue: .request)
 ]
