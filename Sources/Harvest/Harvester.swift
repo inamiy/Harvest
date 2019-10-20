@@ -4,6 +4,7 @@ import Combine
 /// and with "current state" transform to "next state" & "output (additional effect)".
 public final class Harvester<Input, State>
 {
+    /// Current state.
     @Published
     public private(set) var state: State
 

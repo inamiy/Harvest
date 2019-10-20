@@ -12,14 +12,30 @@ let package = Package(
         .library(
             name: "Harvest",
             targets: ["Harvest"]),
+
+        .library(
+            name: "HarvestStore",
+            targets: ["HarvestStore"]),
+
+        .library(
+            name: "HarvestOptics",
+            targets: ["HarvestOptics"]),
     ],
-    dependencies:  [
+    dependencies: [
+        .package(url: "https://github.com/inamiy/FunOptics", from: "1.0.1"),
     ],
     targets: [
         .target(
             name: "Harvest",
-            dependencies: [],
-            path: "Sources"),
+            dependencies: []),
+
+        .target(
+            name: "HarvestStore",
+            dependencies: ["Harvest"]),
+
+        .target(
+            name: "HarvestOptics",
+            dependencies: ["Harvest", "FunOptics"]),
     ]
 )
 
