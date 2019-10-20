@@ -13,18 +13,28 @@ public final class Store<Input, State>: ObservableObject
 //    @Binding
 //    public private(set) var state: State
 
-    public init<Queue: EffectQueueProtocol, EffectID>(
+    public let objectWillChange: AnyPublisher<State, Never>
+
+    public init<Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .none,
-        mapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>
+        mapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>,
+        scheduler: S,
+        options: S.SchedulerOptions? = nil
     )
     {
         self.harvester = Harvester(
             state: initialState,
             effect: initialEffect.mapInput(Store<Input, State>.BindableInput.input),
             inputs: self.inputs,
-            mapping: lift(effectMapping: mapping)
+            mapping: lift(effectMapping: mapping),
+            scheduler: scheduler,
+            options: options
         )
+
+        self.objectWillChange = self.harvester.$state
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
 
         // Comment-out:
         // Stored binding doesn't work in SwiftUI for some reason.
@@ -44,11 +54,6 @@ public final class Store<Input, State>: ObservableObject
     public var proxy: Proxy
     {
         Proxy(state: self.stateBinding, send: self.send)
-    }
-
-    public var objectWillChange: Published<State>.Publisher
-    {
-        self.harvester.$state
     }
 
 }
