@@ -47,7 +47,12 @@ class EffectMappingLatestSpec: QuickSpec
                     .logoutOK | .loggingOut => .loggedOut  | nil
                 ]
 
-                harvester = Harvester(state: .loggedOut, inputs: inputs, mapping: .reduce(mappings))
+                harvester = Harvester(
+                    state: .loggedOut,
+                    inputs: inputs,
+                    mapping: .reduce(mappings),
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink { reply in

@@ -37,7 +37,7 @@ class ExternalInputSpec: QuickSpec
                 /// Sends `.logoutOK` after delay, simulating async work during `.loggingOut`.
                 let logoutOKPublisher =
                     Just(AuthInput.logoutOK)
-                        .delay(for: 1, scheduler: testScheduler!)
+                        .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
                 // NOTE: predicate style i.e. `T -> Bool` is also available.
@@ -55,7 +55,8 @@ class ExternalInputSpec: QuickSpec
                 harvester = Harvester(
                     state: .loggedOut,
                     inputs: externalInputs.map(ExternalAuthInput.toInternal),
-                    mapping: .reduce(mappings)
+                    mapping: .reduce(mappings),
+                    scheduler: ImmediateScheduler.shared
                 )
 
                 harvester.replies

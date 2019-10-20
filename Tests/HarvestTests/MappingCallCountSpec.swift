@@ -39,7 +39,12 @@ class MappingCallCountSpec: QuickSpec
                     }
                 }
 
-                harvester = Harvester(state: 0, inputs: inputs, mapping: mapping)
+                harvester = Harvester(
+                    state: 0,
+                    inputs: inputs,
+                    mapping: mapping,
+                    scheduler: ImmediateScheduler.shared
+                )
 
                 harvester.replies
                     .sink { reply in
