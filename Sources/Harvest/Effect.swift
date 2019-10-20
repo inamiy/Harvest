@@ -9,9 +9,9 @@ import Combine
 public struct Effect<Input, Queue, ID>
     where Queue: EffectQueueProtocol, ID: Equatable
 {
-    internal let kind: Kind
+    public let kind: Kind
 
-    internal init(kind: Kind)
+    public init(kind: Kind)
     {
         self.kind = kind
     }
@@ -23,14 +23,14 @@ public struct Effect<Input, Queue, ID>
     ///   - producer: "Cold" stream that runs side-effect and sends next `Input`.
     ///   - queue: Uses custom queue, or set `nil` as default queue to use `merge` strategy.
     ///   - id: Effect identifier for cancelling running `producer`.
-    public init(
-        _ publisher: AnyPublisher<Input, Never>,
+    public init<P: Publisher>(
+        _ publisher: P,
         queue: Queue = .defaultEffectQueue,
         id: ID? = nil
-        )
+    ) where P.Output == Input, P.Failure == Never
     {
-        self.init(kind: .publisher(
-            _Publisher(
+        self.init(kind: .task(
+            Task(
                 publisher: publisher,
                 queue: queue,
                 id: id
@@ -38,7 +38,7 @@ public struct Effect<Input, Queue, ID>
         ))
     }
 
-    /// Cancels running `publisher` by specifying `identifiers`.
+    /// Cancels running `publisher`s by specifying `identifiers`.
     public static func cancel(
         _ identifiers: @escaping (ID) -> Bool
         ) -> Effect<Input, Queue, ID>
@@ -57,7 +57,7 @@ public struct Effect<Input, Queue, ID>
     /// Empty side-effect.
     public static var empty: Effect<Input, Queue, ID>
     {
-        return Effect(.empty)
+        return Effect(Empty(completeImmediately: true))
     }
 
     // MARK: - Functor
@@ -65,8 +65,8 @@ public struct Effect<Input, Queue, ID>
     public func mapInput<Input2>(_ f: @escaping (Input) -> Input2) -> Effect<Input2, Queue, ID>
     {
         switch self.kind {
-        case let .publisher(publisher):
-            return .init(kind: .publisher(Effect<Input2, Queue, ID>._Publisher(
+        case let .task(publisher):
+            return .init(kind: .task(Effect<Input2, Queue, ID>.Task(
                 publisher: publisher.publisher.map(f).eraseToAnyPublisher(),
                 queue: publisher.queue,
                 id: publisher.id
@@ -79,8 +79,8 @@ public struct Effect<Input, Queue, ID>
     public func mapQueue<Queue2>(_ f: @escaping (Queue) -> Queue2) -> Effect<Input, Queue2, ID>
     {
         switch self.kind {
-        case let .publisher(publisher):
-            return .init(kind: .publisher(Effect<Input, Queue2, ID>._Publisher(
+        case let .task(publisher):
+            return .init(kind: .task(Effect<Input, Queue2, ID>.Task(
                 publisher: publisher.publisher,
                 queue: f(publisher.queue),
                 id: publisher.id
@@ -90,29 +90,13 @@ public struct Effect<Input, Queue, ID>
         }
     }
 
-    public func invmapID<ID2>(
-        _ forward: @escaping (ID) -> ID2,
-        _ backword: @escaping (ID2) -> ID
-    ) -> Effect<Input, Queue, ID2>
-    {
-        switch self.kind {
-        case let .publisher(publisher):
-            return .init(kind: .publisher(Effect<Input, Queue, ID2>._Publisher(
-                publisher: publisher.publisher,
-                queue: publisher.queue,
-                id: publisher.id.map(forward)
-            )))
-        case let .cancel(predicate):
-            return .cancel { predicate(backword($0)) }
-        }
-    }
 }
 
 extension Effect
 {
-    internal var publisher: _Publisher?
+    internal var task: Task?
     {
-        guard case let .publisher(value) = self.kind else { return nil }
+        guard case let .task(value) = self.kind else { return nil }
         return value
     }
 
@@ -127,21 +111,32 @@ extension Effect
 
 extension Effect
 {
-    internal enum Kind
+    public enum Kind
     {
-        case publisher(_Publisher)
+        case task(Task)
         case cancel((ID) -> Bool)
     }
 
-    internal struct _Publisher
+    public struct Task
     {
         /// "Cold" stream that runs side-effect and sends next `Input`.
-        internal let publisher: AnyPublisher<Input, Never>
+        public let publisher: AnyPublisher<Input, Never>
 
         /// Effect queue that associates with `publisher` to perform various `flattenStrategy`s.
-        internal let queue: Queue
+        public let queue: Queue
 
         /// Effect identifier for cancelling running `publisher`.
-        internal let id: ID?
+        public let id: ID?
+
+        public init<P: Publisher>(
+            publisher: P,
+            queue: Queue,
+            id: ID? = nil
+        ) where P.Output == Input, P.Failure == Never
+        {
+            self.publisher = publisher.eraseToAnyPublisher()
+            self.queue = queue
+            self.id = id
+        }
     }
 }

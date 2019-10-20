@@ -108,18 +108,6 @@ extension Harvester
             }
         }
 
-        public func invmapID<EffectID2>(
-            _ forward: @escaping (EffectID) -> EffectID2,
-            _ backward: @escaping (EffectID2) -> EffectID
-        ) -> Harvester<Input, State>.EffectMapping<Queue, EffectID2>
-        {
-            return .init { input, state in
-                guard let (newState, effect) = self.run(input, state) else { return nil }
-                let effect2 = effect.invmapID(forward, backward)
-                return (newState, effect2)
-            }
-        }
-
         /// Folds multiple `Harvester.EffectMapping`s into one (preceding mapping has higher priority).
         public static func reduce<Mappings: Sequence, Queue, EffectID>(
             _ mappings: Mappings

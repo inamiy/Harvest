@@ -36,7 +36,6 @@ class TimerSubscriptionSpec: QuickSpec
                     .autoconnect()  // Required
                     .scan(0, { count, _ in count + 1 })
                     .map(TimerInput.tick)
-                    .eraseToAnyPublisher()
 
                 let mapping: EffectMapping = .init { input, state in
                     switch input {

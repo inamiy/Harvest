@@ -79,12 +79,13 @@ public func | <Input: Equatable, State>(
 
 // MARK: `|` (Harvester.EffectMapping constructor)
 
-public func | <Input, State, Queue, EffectID>(
+public func | <P: Publisher, Input, State, Queue, EffectID>(
     mapping: Harvester<Input, State>.Mapping,
-    effect: AnyPublisher<Input, Never>
-    ) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
+    publisher: P
+) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
+    where P.Output == Input, P.Failure == Never
 {
-    return mapping | Effect(effect)
+    return mapping | Effect(publisher)
 }
 
 public func | <Input, State, Queue, EffectID>(
