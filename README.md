@@ -3,7 +3,7 @@
 [![Swift 5.1](https://img.shields.io/badge/swift-5.1-orange.svg?style=flat)](https://swift.org/download/)
 [![Build Status](https://travis-ci.org/inamiy/Harvest.svg?branch=master)](https://travis-ci.org/inamiy/Harvest)
 
-Apple's [Combine.framework](https://developer.apple.com/documentation/combine) (from iOS 13) + State Machine, inspired by [Redux](https://github.com/reactjs/redux) and [Elm](http://elm-lang.org/).
+Apple's [Combine.framework](https://developer.apple.com/documentation/combine) (from iOS 13) + State Machine, inspired by [Elm](http://elm-lang.org/).
 
 This is a sister library of the following projects:
 
@@ -159,6 +159,17 @@ Instead of using `EffectMapping` with fine-grained `EffectQueue` model, Harvest 
 - [sergdort/CombineFeedback](https://github.com/sergdort/CombineFeedback)
 
 See [inamiy/ReactiveAutomaton#12](https://github.com/inamiy/ReactiveAutomaton/pull/12) for more discussion.
+
+## Composable Architecture with SwiftUI
+
+[Pull Request \#8](https://github.com/inamiy/Harvest/pull/8) introduced `HarvestStore` and `HarvestOptics` frameworks for Composable Architecture, especially focused on SwiftUI.
+
+- **HarvestStore**: 2-way bindable `Store` optimized for SwiftUI
+- **HarvestOptics**: Input & state lifting helpers using [FunOptics](https://github.com/inamiy/FunOptics)
+
+See also [Babylonpartners/ios-playbook#171](https://github.com/Babylonpartners/ios-playbook/pull/171) for further related discussion.
+
+Demo app will be coming soon :)
 
 ## References
 
