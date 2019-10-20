@@ -32,13 +32,11 @@ class EffectMappingLatestSpec: QuickSpec
                 let loginOKProducer =
                     Just(AuthInput.loginOK)
                         .delay(for: 1, scheduler: testScheduler)
-                        .eraseToAnyPublisher()
 
                 /// Sends `.logoutOK` after delay, simulating async work during `.loggingOut`.
                 let logoutOKProducer =
                     Just(AuthInput.logoutOK)
                         .delay(for: 1, scheduler: testScheduler)
-                        .eraseToAnyPublisher()
 
                 let mappings: [EffectMapping] = [
                     .login    | .loggedOut  => .loggingIn  | Effect(loginOKProducer, queue: .request),

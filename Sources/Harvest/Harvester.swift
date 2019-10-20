@@ -85,12 +85,12 @@ public final class Harvester<Input, State>
                     .prepend(initialEffect)
                     .share()
 
-                let publishers = effects.compactMap { $0.publisher }
+                let tasks = effects.compactMap { $0.task }
                 let cancels = effects.compactMap { $0.cancel }
 
                 let effectInputs = Publishers.MergeMany(
                     Queue.allCases.map { queue in
-                        publishers
+                        tasks
                             .filter { $0.queue == queue }
                             .flatMap(queue.flattenStrategy) { publisher -> AnyPublisher<Input, Never> in
                                 guard let publisherID = publisher.id else {

@@ -32,13 +32,11 @@ class ExternalInputSpec: QuickSpec
                 let loginOKPublisher =
                     Just(AuthInput.loginOK)
                         .delay(for: 1, scheduler: testScheduler)
-                        .eraseToAnyPublisher()
 
                 /// Sends `.logoutOK` after delay, simulating async work during `.loggingOut`.
                 let logoutOKPublisher =
                     Just(AuthInput.logoutOK)
                         .delay(for: 1, scheduler: testScheduler)
-                        .eraseToAnyPublisher()
 
                 // NOTE: predicate style i.e. `T -> Bool` is also available.
                 let canForceLogout: (AuthState) -> Bool = [AuthState.loggingIn, .loggedIn].contains

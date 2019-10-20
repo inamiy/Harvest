@@ -36,4 +36,16 @@ extension Harvester.EffectMapping
         }
     }
 
+    /// Transforms `EffectMapping` from `ID` to `WholeID`.
+    public func transform<WholeEffectID>(
+        id prism: Prism<WholeEffectID, EffectID>
+    ) -> Harvester<Input, State>.EffectMapping<Queue, WholeEffectID>
+    {
+        return .init { input, state in
+            guard let (newState, effect) = self.run(input, state) else { return nil }
+            let effect2 = effect.transform(id: prism)
+            return (newState, effect2)
+        }
+    }
+
 }
