@@ -2,15 +2,15 @@ import SwiftUI
 
 extension Binding
 {
-    /// Transforms `<Value>` to `<SubValue>` using `get` and `set` invariant mappers.
-    public func invmap<SubValue>(
+    /// Transforms `<Value>` to `<SubValue>` using `get` and `set`.
+    public func transform<SubValue>(
         get: @escaping (Value) -> SubValue,
-        set: @escaping (SubValue) -> Value
+        set: @escaping (Value, SubValue) -> Value
     ) -> Binding<SubValue>
     {
         Binding<SubValue>(
             get: { get(self.wrappedValue) },
-            set: { self.wrappedValue = set($0) }
+            set: { self.wrappedValue = set(self.wrappedValue, $0) }
         )
     }
 
