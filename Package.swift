@@ -22,7 +22,7 @@ let package = Package(
             targets: ["HarvestOptics"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/inamiy/FunOptics", from: "1.0.0"),
+        .package(url: "https://github.com/inamiy/FunOptics", from: "1.0.1"),
     ],
     targets: [
         .target(
