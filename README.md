@@ -168,9 +168,11 @@ See [inamiy/ReactiveAutomaton#12](https://github.com/inamiy/ReactiveAutomaton/pu
 - **HarvestStore**: 2-way bindable `Store` optimized for SwiftUI
 - **HarvestOptics**: Input & state lifting helpers using [FunOptics](https://github.com/inamiy/FunOptics)
 
+See [Harvest-SwiftUI-Gallery](https://github.com/inamiy/Harvest-SwiftUI-Gallery) for the examples.
+
 See also [Babylonpartners/ios-playbook#171](https://github.com/Babylonpartners/ios-playbook/pull/171) for further related discussion.
 
-Demo app will be coming soon :)
+- [ ] TODO: Write documentation
 
 ## References
 
