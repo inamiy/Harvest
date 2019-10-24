@@ -50,7 +50,7 @@ class FeedbackSpec: QuickSpec
                 harvester = Harvester(
                     state: .loggedOut,
                     inputs: inputs,
-                    mapping: .reduce(mappings),
+                    mapping: .reduce(.first, mappings),
                     feedback: reduce([
                         Feedback(
                             filter: { $0.input == AuthInput.login },

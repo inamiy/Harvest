@@ -86,10 +86,10 @@ public final class Harvester<Input, State>
                     .share()
 
                 let tasks = effects.map { $0.tasks }
-                    .flatMap { Publishers.Sequence(sequence: $0) }
+                    .flatMap(Publishers.Sequence.init(sequence:))
 
                 let cancels = effects.map { $0.cancels }
-                    .flatMap { Publishers.Sequence(sequence: $0) }
+                    .flatMap(Publishers.Sequence.init(sequence:))
 
                 let effectInputs = Publishers.MergeMany(
                     Queue.allCases.map { queue in

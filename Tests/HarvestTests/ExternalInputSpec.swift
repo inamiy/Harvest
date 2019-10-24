@@ -53,7 +53,7 @@ class ExternalInputSpec: QuickSpec
                 harvester = Harvester(
                     state: .loggedOut,
                     inputs: externalInputs.map(ExternalAuthInput.toInternal),
-                    mapping: .reduce(mappings),
+                    mapping: .reduce(.first, mappings),
                     scheduler: ImmediateScheduler.shared
                 )
 

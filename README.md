@@ -103,7 +103,7 @@ var cancellables: [AnyCancellable] = []
 let harvester = Harvester(
     state: .loggedOut,
     input: inputs,
-    mapping: .reduce(mappings),  // combine mappings using `reduce` helper
+    mapping: .reduce(.first, mappings),  // combine mappings using `reduce` helper
     scheduler: DispatchQueue.main
 )
 

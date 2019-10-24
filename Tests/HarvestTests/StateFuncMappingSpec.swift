@@ -30,7 +30,7 @@ class StateFuncMappingSpec: QuickSpec
                 harvester = Harvester(
                     state: 0,
                     inputs: inputs,
-                    mapping: .reduce(mappings),
+                    mapping: .reduce(.first, mappings),
                     scheduler: ImmediateScheduler.shared
                 )
             }

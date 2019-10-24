@@ -51,7 +51,7 @@ class EffectMappingSpec: QuickSpec
                 harvester = Harvester(
                     state: .loggedOut,
                     inputs: inputs,
-                    mapping: .reduce(mappings),
+                    mapping: .reduce(.first, mappings),
                     scheduler: ImmediateScheduler.shared
                 )
 
@@ -299,7 +299,7 @@ class EffectMappingSpec: QuickSpec
                 harvester = Harvester(
                     state: .loggedOut,
                     inputs: inputs,
-                    mapping: .reduce(mappings),
+                    mapping: .reduce(.first, mappings),
                     scheduler: ImmediateScheduler.shared
                 )
 
