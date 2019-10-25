@@ -17,7 +17,7 @@ public final class Harvester<Input, State>
     ///   - state: Initial state.
     ///   - inputs: External "hot" input stream that `Harvester` receives.
     ///   - mapping: Simple `Mapping` that designates next state only (no additional effect).
-    ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
+    ///   - scheduler: Scheduler for next inputs from `Effect`. (NOTE: This should be on the same thread as `inputs`)
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
@@ -44,7 +44,7 @@ public final class Harvester<Input, State>
     ///   - effect: Initial effect.
     ///   - inputs: External "hot" input stream that `Harvester` receives.
     ///   - mapping: `EffectMapping` that designates next state and also generates additional effect.
-    ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
+    ///   - scheduler: Scheduler for next inputs from `Effect`. (NOTE: This should be on the same thread as `inputs`)
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
@@ -129,8 +129,13 @@ public final class Harvester<Input, State>
 
         let effectInputs = PassthroughSubject<Input, Never>()
 
-        let mapped = Publishers.Merge(inputs, effectInputs)
-            .receive(on: scheduler, options: options)
+        // NOTE:
+        // `inputs` synchronously updates `self.state` without delay (e.g. for UI update),
+        // so it should not use `scheduler`.
+        let mapped = Publishers.Merge(
+            inputs,
+            effectInputs.receive(on: scheduler, options: options)
+        )
             .map { [unowned self] input -> (Input, State) in
                 let fromState = self.state
                 return (input, fromState)

@@ -9,7 +9,7 @@ extension Harvester
     ///   - inputs: External "hot" input stream that `Harvester` receives.
     ///   - mapping: Simple `Mapping` that designates next state only (no additional effect).
     ///   - feedback: `Publisher` transformer that performs side-effect and emits next input.
-    ///   - scheduler: Scheduler for `inputs` and next inputs from `Feedback`.
+    ///   - scheduler: Scheduler for next inputs from `Feedback`. (NOTE: This should be on the same thread as `inputs`)
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
