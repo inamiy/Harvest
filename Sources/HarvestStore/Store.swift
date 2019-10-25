@@ -15,12 +15,10 @@ public final class Store<Input, State>: ObservableObject
 
     public let objectWillChange: AnyPublisher<State, Never>
 
-    public init<Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
+    public init<Queue: EffectQueueProtocol, EffectID>(
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
-        mapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>,
-        scheduler: S,
-        options: S.SchedulerOptions? = nil
+        mapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>
     )
     {
         self.harvester = Harvester(
@@ -28,8 +26,7 @@ public final class Store<Input, State>: ObservableObject
             effect: initialEffect.mapInput(Store<Input, State>.BindableInput.input),
             inputs: self.inputs,
             mapping: lift(effectMapping: mapping),
-            scheduler: scheduler,
-            options: options
+            scheduler: DispatchQueue.main
         )
 
         self.objectWillChange = self.harvester.$state
