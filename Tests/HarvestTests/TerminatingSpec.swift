@@ -124,9 +124,9 @@ class TerminatingSpec: QuickSpec
             // IMPORTANT:
             // While `sendInput1And2AfterDelay` is still in progress,
             // Combine will cancel on-flight inner publishers.
-            describe("inputSignal sendCompleted") {
+            describe("`inputs` sendCompleted") {
 
-                it("inputSignal sendCompleted before sending input") {
+                it("`inputs` sendCompleted before sending input") {
                     expect(harvester.state) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())
@@ -138,7 +138,7 @@ class TerminatingSpec: QuickSpec
                     expect(lastRepliesCompletion).toNot(beNil())
                 }
 
-                it("inputSignal sendCompleted while sending input") {
+                it("`inputs` sendCompleted while sending input") {
                     expect(harvester.state) == .state0
                     expect(lastReply).to(beNil())
                     expect(lastRepliesCompletion).to(beNil())

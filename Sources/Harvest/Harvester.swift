@@ -15,13 +15,13 @@ public final class Harvester<Input, State>
     ///
     /// - Parameters:
     ///   - state: Initial state.
-    ///   - input: External "hot" input stream that `Harvester` receives.
+    ///   - inputs: External "hot" input stream that `Harvester` receives.
     ///   - mapping: Simple `Mapping` that designates next state only (no additional effect).
     ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
-        inputs inputSignal: Inputs,
+        inputs: Inputs,
         mapping: Mapping,
         scheduler: S,
         options: S.SchedulerOptions? = nil
@@ -30,7 +30,7 @@ public final class Harvester<Input, State>
     {
         self.init(
             state: initialState,
-            inputs: inputSignal,
+            inputs: inputs,
             mapping: .init { mapping.run($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.empty) } },
             scheduler: scheduler,
             options: options
@@ -42,14 +42,14 @@ public final class Harvester<Input, State>
     /// - Parameters:
     ///   - state: Initial state.
     ///   - effect: Initial effect.
-    ///   - input: External "hot" input stream that `Harvester` receives.
+    ///   - inputs: External "hot" input stream that `Harvester` receives.
     ///   - mapping: `EffectMapping` that designates next state and also generates additional effect.
     ///   - scheduler: Scheduler for `inputs` and next inputs from `Effect`.
     ///   - options: `scheduler` options.
     public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
         effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
-        inputs inputSignal: Inputs,
+        inputs: Inputs,
         mapping: EffectMapping<Queue, EffectID>,
         scheduler: S,
         options: S.SchedulerOptions? = nil
@@ -58,8 +58,8 @@ public final class Harvester<Input, State>
     {
         self.init(
             state: initialState,
-            inputs: inputSignal,
-            makeSignals: { from -> MakeSignals in
+            inputs: inputs,
+            makePublishers: { from -> RepliesAndEffects in
                 let mapped = from
                     .map { input, fromState in
                         return (input, fromState, mapping.run(input, fromState))
@@ -118,8 +118,8 @@ public final class Harvester<Input, State>
 
     internal init<Inputs: Publisher, S: Scheduler>(
         state initialState: State,
-        inputs inputSignal: Inputs,
-        makeSignals: (AnyPublisher<(Input, State), Never>) -> MakeSignals,
+        inputs: Inputs,
+        makePublishers: (AnyPublisher<(Input, State), Never>) -> RepliesAndEffects,
         scheduler: S,
         options: S.SchedulerOptions? = nil
     )
@@ -129,7 +129,7 @@ public final class Harvester<Input, State>
 
         let effectInputs = PassthroughSubject<Input, Never>()
 
-        let mapped = Publishers.Merge(inputSignal, effectInputs)
+        let mapped = Publishers.Merge(inputs, effectInputs)
             .receive(on: scheduler, options: options)
             .map { [unowned self] input -> (Input, State) in
                 let fromState = self.state
@@ -137,7 +137,7 @@ public final class Harvester<Input, State>
             }
             .eraseToAnyPublisher()
 
-        let (replies, effects) = makeSignals(mapped)
+        let (replies, effects) = makePublishers(mapped)
 
         replies.compactMap { $0.toState }
             .sink { [unowned self] state in
@@ -154,7 +154,7 @@ public final class Harvester<Input, State>
         effectCancellable
             .store(in: &self._cancellables)
 
-        inputSignal
+        inputs
             .sink(receiveCompletion: { [_replies] _ in
                 effectCancellable.cancel()
                 _replies.send(completion: .finished)
@@ -171,7 +171,7 @@ public final class Harvester<Input, State>
 
 extension Harvester
 {
-    internal typealias MakeSignals = (
+    internal typealias RepliesAndEffects = (
         replies: AnyPublisher<Reply<Input, State>, Never>,
         effects: AnyPublisher<Input, Never>
     )
@@ -181,7 +181,7 @@ extension Harvester
 
 extension Harvester
 {
-    /// `Reply` signal that notifies either `.success` or `.failure` of state-transition on every input.
+    /// `Reply` publisher that notifies either `.success` or `.failure` of state-transition on every input.
     public var replies: AnyPublisher<Reply<Input, State>, Never>
     {
         AnyPublisher(self._replies)

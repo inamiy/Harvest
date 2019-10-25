@@ -1,6 +1,6 @@
 import Combine
 
-/// FRP-driven `Signal` transformer that is used
+/// FRP-driven publisher transformer that is used
 /// as an alternative side-effect & feedback system in `Harvester`.
 ///
 /// - Note: `Harvester` supports `Effect` and `EffectQueue` as a primary system.
@@ -63,8 +63,8 @@ public struct Feedback<Input, Output>
 /// Folds multiple `Feedback`s into one.
 public func reduce<Input, Output>(_ feedbacks: [Feedback<Input, Output>]) -> Feedback<Input, Output>
 {
-    return Feedback<Input, Output>(transform: { signal in
-        Publishers.MergeMany(feedbacks.map { $0.transform(signal) })
+    return Feedback<Input, Output>(transform: { publisher in
+        Publishers.MergeMany(feedbacks.map { $0.transform(publisher) })
             .eraseToAnyPublisher()
     })
 }
