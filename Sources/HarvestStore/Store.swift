@@ -33,7 +33,6 @@ public final class Store<Input, State>: ObservableObject
         )
 
         self.objectWillChange = self.harvester.$state
-            .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
 
         // Comment-out:
