@@ -9,11 +9,11 @@ import Combine
 public struct Effect<Input, Queue, ID>
     where Queue: EffectQueueProtocol, ID: Equatable
 {
-    public let kind: Kind
+    public let kinds: [Kind]
 
-    public init(kind: Kind)
+    public init(kinds: [Kind] = [])
     {
-        self.kind = kind
+        self.kinds = kinds
     }
 
     /// Managed side-effect that enqueues `publisher` on `EffectQueue`
@@ -29,13 +29,13 @@ public struct Effect<Input, Queue, ID>
         id: ID? = nil
     ) where P.Output == Input, P.Failure == Never
     {
-        self.init(kind: .task(
+        self.init(kinds: [.task(
             Task(
                 publisher: publisher,
                 queue: queue,
                 id: id
             )
-        ))
+        )])
     }
 
     /// Cancels running `publisher`s by specifying `identifiers`.
@@ -43,7 +43,7 @@ public struct Effect<Input, Queue, ID>
         _ identifiers: @escaping (ID) -> Bool
         ) -> Effect<Input, Queue, ID>
     {
-        return Effect(kind: .cancel(identifiers))
+        return Effect(kinds: [.cancel(identifiers)])
     }
 
     /// Cancels running `publisher` by specifying `identifier`.
@@ -51,59 +51,67 @@ public struct Effect<Input, Queue, ID>
         _ identifier: ID
         ) -> Effect<Input, Queue, ID>
     {
-        return Effect(kind: .cancel { $0 == identifier })
+        return Effect(kinds: [.cancel { $0 == identifier }])
     }
 
-    /// Empty side-effect.
+    // MARK: - Monoid
+
     public static var empty: Effect<Input, Queue, ID>
     {
-        return Effect(Empty(completeImmediately: true))
+        return Effect()
+    }
+
+    public static func + (l: Effect, r: Effect) -> Effect
+    {
+        return .init(kinds: l.kinds + r.kinds)
     }
 
     // MARK: - Functor
 
     public func mapInput<Input2>(_ f: @escaping (Input) -> Input2) -> Effect<Input2, Queue, ID>
     {
-        switch self.kind {
-        case let .task(publisher):
-            return .init(kind: .task(Effect<Input2, Queue, ID>.Task(
-                publisher: publisher.publisher.map(f).eraseToAnyPublisher(),
-                queue: publisher.queue,
-                id: publisher.id
-            )))
-        case let .cancel(predicate):
-            return .cancel(predicate)
-        }
+        .init(kinds: self.kinds.map { kind in
+            switch kind {
+            case let .task(publisher):
+                return .task(Effect<Input2, Queue, ID>.Task(
+                    publisher: publisher.publisher.map(f).eraseToAnyPublisher(),
+                    queue: publisher.queue,
+                    id: publisher.id
+                ))
+            case let .cancel(predicate):
+                return .cancel(predicate)
+            }
+        })
     }
 
     public func mapQueue<Queue2>(_ f: @escaping (Queue) -> Queue2) -> Effect<Input, Queue2, ID>
     {
-        switch self.kind {
-        case let .task(publisher):
-            return .init(kind: .task(Effect<Input, Queue2, ID>.Task(
-                publisher: publisher.publisher,
-                queue: f(publisher.queue),
-                id: publisher.id
-            )))
-        case let .cancel(predicate):
-            return .cancel(predicate)
-        }
+        .init(kinds: self.kinds.map { kind in
+            switch kind {
+            case let .task(publisher):
+                return .task(Effect<Input, Queue2, ID>.Task(
+                    publisher: publisher.publisher,
+                    queue: f(publisher.queue),
+                    id: publisher.id
+                ))
+            case let .cancel(predicate):
+                return .cancel(predicate)
+            }
+        })
     }
 
 }
 
 extension Effect
 {
-    internal var task: Task?
+    internal var tasks: [Task]
     {
-        guard case let .task(value) = self.kind else { return nil }
-        return value
+        self.kinds.compactMap { $0.task }
     }
 
-    internal var cancel: ((ID) -> Bool)?
+    internal var cancels: [(ID) -> Bool]
     {
-        guard case let .cancel(value) = self.kind else { return nil }
-        return value
+        self.kinds.compactMap { $0.cancel }
     }
 }
 
@@ -115,6 +123,18 @@ extension Effect
     {
         case task(Task)
         case cancel((ID) -> Bool)
+
+        internal var task: Task?
+        {
+            guard case let .task(value) = self else { return nil }
+            return value
+        }
+
+        internal var cancel: ((ID) -> Bool)?
+        {
+            guard case let .cancel(value) = self else { return nil }
+            return value
+        }
     }
 
     public struct Task

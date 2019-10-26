@@ -42,7 +42,7 @@ class MappingSpec: QuickSpec
                 harvester = Harvester(
                     state: .loggedOut,
                     inputs: inputs,
-                    mapping: .reduce(mappings),
+                    mapping: .reduce(.first, mappings),
                     scheduler: ImmediateScheduler.shared
                 )
 

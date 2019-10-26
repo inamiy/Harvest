@@ -51,7 +51,7 @@ class TerminatingSpec: QuickSpec
                 harvester = Harvester(
                     state: .state0,
                     inputs: inputs,
-                    mapping: .reduce(mappings),
+                    mapping: .reduce(.first, mappings),
                     scheduler: ImmediateScheduler.shared
                 )
 

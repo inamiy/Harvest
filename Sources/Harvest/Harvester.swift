@@ -85,8 +85,11 @@ public final class Harvester<Input, State>
                     .prepend(initialEffect)
                     .share()
 
-                let tasks = effects.compactMap { $0.task }
-                let cancels = effects.compactMap { $0.cancel }
+                let tasks = effects.map { $0.tasks }
+                    .flatMap(Publishers.Sequence.init(sequence:))
+
+                let cancels = effects.map { $0.cancels }
+                    .flatMap(Publishers.Sequence.init(sequence:))
 
                 let effectInputs = Publishers.MergeMany(
                     Queue.allCases.map { queue in
