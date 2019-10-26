@@ -25,6 +25,15 @@ extension Store
             .init(state: self.$state[dynamicMember: keyPath], send: self.send)
         }
 
+        /// Transforms `Input` to `Input2`.
+        public func contramapInput<Input2>(_ f: @escaping (Input2) -> Input)
+            -> Store<Input2, State>.Proxy
+        {
+            .init(state: self.$state, send: { self.send(f($0)) })
+        }
+
+        // MARK: - To Binding
+
         /// Indirect state-to-input conversion binding to create `Binding<State>`.
         public func stateBinding(
             onChange: @escaping (State) -> Input?
