@@ -10,7 +10,7 @@ class EffectMappingSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
-        typealias EffectMapping = Harvester.EffectMapping<BasicEffectQueue, Never>
+        typealias EffectMapping = Harvester.EffectMapping<Void, BasicEffectQueue, Never>
 
         var inputs: PassthroughSubject<AuthInput, Never>!
         var harvester: Harvester!

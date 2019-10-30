@@ -10,7 +10,7 @@ class ExternalInputSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<AuthInput, AuthState>
-        typealias EffectMapping = Harvester.EffectMapping<RequestEffectQueue, Never>
+        typealias EffectMapping = Harvester.EffectMapping<Void, RequestEffectQueue, Never>
 
         var externalInputs: PassthroughSubject<ExternalAuthInput, Never>!   // NOTE: Using subset `ExternalAuthInput`
         var harvester: Harvester!

@@ -6,7 +6,7 @@ extension Harvest.Effect
     /// Transforms `Effect` from `ID` to `WholeID`.
     public func transform<WholeID>(
         id prism: Prism<WholeID, ID>
-    ) -> Effect<Input, Queue, WholeID>
+    ) -> Effect<World, Input, Queue, WholeID>
     {
         .init(kinds: self.kinds.map { kind in
             switch kind {

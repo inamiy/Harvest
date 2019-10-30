@@ -11,7 +11,7 @@ class TimerSubscriptionSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<TimerInput, Int>
-        typealias EffectMapping = Harvester.EffectMapping<BasicEffectQueue, EffectID>
+        typealias EffectMapping = Harvester.EffectMapping<Void, BasicEffectQueue, EffectID>
         typealias EffectID = String
 
         var inputs: PassthroughSubject<TimerInput, Never>!   // NOTE: Using subset `ExternalAuthInput`

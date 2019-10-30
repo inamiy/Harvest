@@ -79,19 +79,19 @@ public func | <Input: Equatable, State>(
 
 // MARK: `|` (Harvester.EffectMapping constructor)
 
-public func | <P: Publisher, Input, State, Queue, EffectID>(
+public func | <World, P: Publisher, Input, State, Queue, EffectID>(
     mapping: Harvester<Input, State>.Mapping,
     publisher: P
-) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
+) -> Harvester<Input, State>.EffectMapping<World, Queue, EffectID>
     where P.Output == Input, P.Failure == Never
 {
     return mapping | Effect(publisher)
 }
 
-public func | <Input, State, Queue, EffectID>(
+public func | <World, Input, State, Queue, EffectID>(
     mapping: Harvester<Input, State>.Mapping,
-    effect: Effect<Input, Queue, EffectID>
-    ) -> Harvester<Input, State>.EffectMapping<Queue, EffectID>
+    effect: Effect<World, Input, Queue, EffectID>
+    ) -> Harvester<Input, State>.EffectMapping<World, Queue, EffectID>
 {
     return .init { input, fromState in
         if let toState = mapping.run(input, fromState) {
