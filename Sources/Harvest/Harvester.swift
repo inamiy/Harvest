@@ -31,7 +31,8 @@ public final class Harvester<Input, State>
         self.init(
             state: initialState,
             inputs: inputs,
-            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Input, BasicEffectQueue, Never>.empty) } },
+            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Void, Input, BasicEffectQueue, Never>.empty) } },
+            world: (),
             scheduler: scheduler,
             options: options
         )
@@ -44,13 +45,15 @@ public final class Harvester<Input, State>
     ///   - effect: Initial effect.
     ///   - inputs: External "hot" input stream that `Harvester` receives.
     ///   - mapping: `EffectMapping` that designates next state and also generates additional effect.
+    ///   - world: External real-world state dependency that interacts with `Effect`s.
     ///   - scheduler: Scheduler for next inputs from `Effect`. (NOTE: This should be on the same thread as `inputs`)
     ///   - options: `scheduler` options.
-    public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
+    public convenience init<World, Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
-        effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
+        effect initialEffect: Effect<World, Input, Queue, EffectID> = .empty,
         inputs: Inputs,
-        mapping: EffectMapping<Queue, EffectID>,
+        mapping: EffectMapping<World, Queue, EffectID>,
+        world: World,
         scheduler: S,
         options: S.SchedulerOptions? = nil
     )
@@ -78,7 +81,7 @@ public final class Harvester<Input, State>
                     .eraseToAnyPublisher()
 
                 let effects = mapped
-                    .compactMap { _, _, mapped -> Effect<Input, Queue, EffectID> in
+                    .compactMap { _, _, mapped -> Effect<World, Input, Queue, EffectID> in
                         guard case let .some(_, effect) = mapped else { return .empty }
                         return effect
                     }
@@ -95,16 +98,16 @@ public final class Harvester<Input, State>
                     Queue.allCases.map { queue in
                         tasks
                             .filter { $0.queue == queue }
-                            .flatMap(queue.flattenStrategy) { publisher -> AnyPublisher<Input, Never> in
-                                guard let publisherID = publisher.id else {
-                                    return publisher.publisher
+                            .flatMap(queue.flattenStrategy) { task -> AnyPublisher<Input, Never> in
+                                guard let publisherID = task.id else {
+                                    return task.publisher(world)
                                 }
 
                                 let until = cancels
                                     .filter { $0(publisherID) }
                                     .map { _ in }
 
-                                return publisher.publisher
+                                return task.publisher(world)
                                     .prefix(untilOutputFrom: until)
                                     .eraseToAnyPublisher()
                             }
@@ -201,5 +204,30 @@ extension Harvester: ObservableObject
     public var objectWillChange: Published<State>.Publisher
     {
         self.$state
+    }
+}
+
+// MARK: - Void World Initializer
+
+extension Harvester
+{
+    public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
+        state initialState: State,
+        effect initialEffect: Effect<Void, Input, Queue, EffectID> = .empty,
+        inputs: Inputs,
+        mapping: EffectMapping<Void, Queue, EffectID>,
+        scheduler: S,
+        options: S.SchedulerOptions? = nil
+    )
+        where Inputs.Output == Input, Inputs.Failure == Never
+    {
+        self.init(
+            state: initialState,
+            inputs: inputs,
+            mapping: mapping,
+            world: (),
+            scheduler: scheduler,
+            options: options
+        )
     }
 }

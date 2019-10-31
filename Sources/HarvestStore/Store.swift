@@ -15,10 +15,11 @@ public final class Store<Input, State>: ObservableObject
 
     public let objectWillChange: AnyPublisher<State, Never>
 
-    public init<Queue: EffectQueueProtocol, EffectID>(
+    public init<World, Queue: EffectQueueProtocol, EffectID>(
         state initialState: State,
-        effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
-        mapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>
+        effect initialEffect: Effect<World, Input, Queue, EffectID> = .empty,
+        mapping: Harvester<Input, State>.EffectMapping<World, Queue, EffectID>,
+        world: World
     )
     {
         self.harvester = Harvester(
@@ -26,6 +27,7 @@ public final class Store<Input, State>: ObservableObject
             effect: initialEffect.mapInput(Store<Input, State>.BindableInput.input),
             inputs: self.inputs,
             mapping: lift(effectMapping: mapping),
+            world: world,
             scheduler: DispatchQueue.main
         )
 
@@ -92,15 +94,15 @@ extension Store
 
 extension Store
 {
-    fileprivate typealias EffectMapping<Queue, EffectID> =
-        Harvester<BindableInput, State>.EffectMapping<Queue, EffectID>
+    fileprivate typealias EffectMapping<World, Queue, EffectID> =
+        Harvester<BindableInput, State>.EffectMapping<World, Queue, EffectID>
         where Queue: EffectQueueProtocol, EffectID: Equatable
 }
 
 /// Lifts from `Harvester.EffectMapping` to `Store.EffectMapping`, converting from `Input` to `Store.BindableInput`.
-private func lift<Input, State, Queue: EffectQueueProtocol, EffectID>(
-    effectMapping: Harvester<Input, State>.EffectMapping<Queue, EffectID>
-) -> Store<Input, State>.EffectMapping<Queue, EffectID>
+private func lift<World, Input, State, Queue: EffectQueueProtocol, EffectID>(
+    effectMapping: Harvester<Input, State>.EffectMapping<World, Queue, EffectID>
+) -> Store<Input, State>.EffectMapping<World, Queue, EffectID>
 {
     .init { input, state in
         switch input {

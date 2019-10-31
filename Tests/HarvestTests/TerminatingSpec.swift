@@ -9,7 +9,7 @@ class TerminatingSpec: QuickSpec
     override func spec()
     {
         typealias Harvester = Harvest.Harvester<MyInput, MyState>
-        typealias EffectMapping = Harvester.EffectMapping<BasicEffectQueue, Never>
+        typealias EffectMapping = Harvester.EffectMapping<Void, BasicEffectQueue, Never>
 
         var inputs: PassthroughSubject<MyInput, Never>!
         var harvester: Harvester!
