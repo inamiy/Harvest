@@ -82,7 +82,7 @@ public final class Harvester<Input, State>
 
                 let effects = mapped
                     .compactMap { _, _, mapped -> Effect<World, Input, Queue, EffectID> in
-                        guard case let .some(_, effect) = mapped else { return .empty }
+                        guard let (_, effect) = mapped else { return .empty }
                         return effect
                     }
                     .prepend(initialEffect)
