@@ -22,7 +22,7 @@ let package = Package(
             targets: ["HarvestOptics"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/inamiy/FunOptics", from: "1.0.2"),
+        .package(url: "https://github.com/inamiy/FunOptics", .branch("swift-case-paths")),
     ],
     targets: [
         .target(
@@ -39,11 +39,10 @@ let package = Package(
     ]
 )
 
+//----------------------------------------
+// Dev Dependencies
+//----------------------------------------
 // `$ HARVEST_SPM_TEST=1 swift package generate-xcodeproj`
-//
-// NOTE:
-// `$ HARVEST_SPM_TEST=1 swift test` won't work since using Combine,
-// so instead comment-out this if-condition check to enable Xcode-testing.
 if ProcessInfo.processInfo.environment.keys.contains("HARVEST_SPM_TEST") {
     package.targets.append(
         .testTarget(

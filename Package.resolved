@@ -5,9 +5,9 @@
         "package": "FunOptics",
         "repositoryURL": "https://github.com/inamiy/FunOptics",
         "state": {
-          "branch": null,
-          "revision": "f57344c0947a2b83918462ee92e5a7dac60d35bd",
-          "version": "1.0.2"
+          "branch": "swift-case-paths",
+          "revision": "7d1b94eb1acfe8d96e67340fc45b13cd7f2d5389",
+          "version": null
         }
       },
       {
@@ -26,6 +26,15 @@
           "branch": null,
           "revision": "33682c2f6230c60614861dfc61df267e11a1602f",
           "version": "2.2.0"
+        }
+      },
+      {
+        "package": "CasePaths",
+        "repositoryURL": "https://github.com/pointfreeco/swift-case-paths",
+        "state": {
+          "branch": null,
+          "revision": "a9c1e05518b6d95cf5844d823020376f2b6ff842",
+          "version": "0.1.0"
         }
       },
       {
