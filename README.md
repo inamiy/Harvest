@@ -1,7 +1,7 @@
 # 🌾 Harvest
 
 [![Swift 5.1](https://img.shields.io/badge/swift-5.1-orange.svg?style=flat)](https://swift.org/download/)
-[![Build Status](https://travis-ci.org/inamiy/Harvest.svg?branch=master)](https://travis-ci.org/inamiy/Harvest)
+![Build Status](https://github.com/inamiy/Harvest/workflows/CI/badge.svg)
 
 Apple's [Combine.framework](https://developer.apple.com/documentation/combine) (from iOS 13) + State Machine, inspired by [Elm](http://elm-lang.org/).
 
