@@ -8,19 +8,6 @@ extension Harvest.Effect
         id prism: Prism<WholeID, ID>
     ) -> Effect<World, Input, Queue, WholeID>
     {
-        .init(kinds: self.kinds.map { kind in
-            switch kind {
-            case let .task(task):
-                return .task(.init(
-                    publisher: task.publisher,
-                    queue: task.queue,
-                    id: task.id.map(prism.inject)
-                ))
-            case let .cancel(predicate):
-                return .cancel {
-                    prism.tryGet($0).map(predicate) ?? false
-                }
-            }
-        })
+        self.transformID(prism.inject, prism.tryGet)
     }
 }

@@ -10,9 +10,9 @@ import Combine
 public struct Effect<World, Input, Queue, ID>
     where Queue: EffectQueueProtocol, ID: Equatable
 {
-    public let kinds: [Kind]
+    internal let kinds: [Kind]
 
-    public init(kinds: [Kind] = [])
+    internal init(kinds: [Kind] = [])
     {
         self.kinds = kinds
     }
@@ -94,7 +94,7 @@ public struct Effect<World, Input, Queue, ID>
         .init(kinds: self.kinds.map { kind in
             switch kind {
             case let .task(task):
-                return .task(Effect<World, Input2, Queue, ID>.Task(
+                return .task(.init(
                     publisher: { task.publisher($0).map(f).eraseToAnyPublisher() },
                     queue: task.queue,
                     id: task.id
@@ -111,7 +111,7 @@ public struct Effect<World, Input, Queue, ID>
         .init(kinds: self.kinds.map { kind in
             switch kind {
             case let .task(task):
-                return .task(Effect<World, Input, Queue2, ID>.Task(
+                return .task(.init(
                     publisher: task.publisher,
                     queue: f(task.queue),
                     id: task.id
@@ -128,7 +128,7 @@ public struct Effect<World, Input, Queue, ID>
         .init(kinds: self.kinds.map { kind in
             switch kind {
             case let .task(task):
-                return .task(Effect<World2, Input, Queue, ID>.Task(
+                return .task(.init(
                     publisher: { task.publisher(f($0)) },
                     queue: task.queue,
                     id: task.id
@@ -140,6 +140,26 @@ public struct Effect<World, Input, Queue, ID>
         })
     }
 
+    public func transformID<WholeID>(
+        _ inject: @escaping (ID) -> WholeID,
+        _ tryGet: @escaping (WholeID) -> ID?
+    ) -> Effect<World, Input, Queue, WholeID>
+    {
+        .init(kinds: self.kinds.map { kind in
+            switch kind {
+            case let .task(task):
+                return .task(.init(
+                    publisher: task.publisher,
+                    queue: task.queue,
+                    id: task.id.map(inject)
+                ))
+            case let .cancel(predicate):
+                return .cancel {
+                    tryGet($0).map(predicate) ?? false
+                }
+            }
+        })
+    }
 }
 
 extension Effect
@@ -159,7 +179,7 @@ extension Effect
 
 extension Effect
 {
-    public enum Kind
+    internal enum Kind
     {
         case task(Task)
         case cancel((ID) -> Bool)
@@ -177,18 +197,18 @@ extension Effect
         }
     }
 
-    public struct Task
+    internal struct Task
     {
         /// "Cold" stream that runs side-effect and sends next `Input`.
-        public let publisher: (World) -> AnyPublisher<Input, Never>
+        internal let publisher: (World) -> AnyPublisher<Input, Never>
 
         /// Effect queue that associates with `publisher` to perform various `flattenStrategy`s.
-        public let queue: Queue
+        internal let queue: Queue
 
         /// Effect identifier for cancelling running `publisher`.
-        public let id: ID?
+        internal let id: ID?
 
-        public init<P: Publisher>(
+        internal init<P: Publisher>(
             publisher: @escaping (World) -> P,
             queue: Queue,
             id: ID? = nil
