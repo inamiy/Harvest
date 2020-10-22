@@ -17,7 +17,7 @@ public final class Store<Input, State>: ObservableObject
 
     public init<World, Queue: EffectQueueProtocol, EffectID>(
         state initialState: State,
-        effect initialEffect: Effect<World, Input, Queue, EffectID> = .empty,
+        effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
         mapping: Harvester<Input, State>.EffectMapping<World, Queue, EffectID>,
         world: World
     )
@@ -104,10 +104,10 @@ private func lift<World, Input, State, Queue: EffectQueueProtocol, EffectID>(
     effectMapping: Harvester<Input, State>.EffectMapping<World, Queue, EffectID>
 ) -> Store<Input, State>.EffectMapping<World, Queue, EffectID>
 {
-    .init { input, state in
+    .init { input, state, world in
         switch input {
         case let .input(innerInput):
-            guard let (newState, effect) = effectMapping.run(innerInput, state) else {
+            guard let (newState, effect) = effectMapping.run(innerInput, state, world) else {
                 return nil
             }
             return (newState, effect.mapInput(Store<Input, State>.BindableInput.input))

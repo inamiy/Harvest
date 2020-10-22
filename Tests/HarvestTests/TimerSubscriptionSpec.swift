@@ -37,7 +37,7 @@ class TimerSubscriptionSpec: QuickSpec
                     .scan(0, { count, _ in count + 1 })
                     .map(TimerInput.tick)
 
-                let mapping: EffectMapping = .init { input, state in
+                let mapping: EffectMapping = .init { input, state, world in
                     switch input {
                     case .start:
                         return (state, Effect(timerPublisher, id: "timer"))

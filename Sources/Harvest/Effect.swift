@@ -5,9 +5,8 @@ import Combine
 ///
 /// This type also handles effect cancellation via `cancel`.
 ///
-/// - Note: Set `World = Void` if not interested in dependency injection.
 /// - Note: Set `ID = Never` if not interested in cancellation.
-public struct Effect<World, Input, Queue, ID>
+public struct Effect<Input, Queue, ID>
     where Queue: EffectQueueProtocol, ID: Equatable
 {
     internal let kinds: [Kind]
@@ -31,27 +30,6 @@ public struct Effect<World, Input, Queue, ID>
     {
         self.init(kinds: [.task(
             Task(
-                publisher: { _ in publisher },
-                queue: queue,
-                id: id
-            )
-        )])
-    }
-
-    /// Managed side-effect that enqueues `publisher` on `Queue` to perform arbitrary `Queue.flattenStrategy`.
-    ///
-    /// - Parameters:
-    ///   - producer: A closure from `World` to "Cold" stream that runs side-effect and sends next `Input`.
-    ///   - queue: Uses custom queue, or set `nil` as default queue to use `merge` strategy.
-    ///   - id: Effect identifier for cancelling running `producer`.
-    public init<P: Publisher>(
-        queue: Queue = .defaultEffectQueue,
-        id: ID? = nil,
-        _ publisher: @escaping (World) -> P
-    ) where P.Output == Input, P.Failure == Never
-    {
-        self.init(kinds: [.task(
-            Task(
                 publisher: publisher,
                 queue: queue,
                 id: id
@@ -62,7 +40,7 @@ public struct Effect<World, Input, Queue, ID>
     /// Cancels running `publisher`s by specifying `identifiers`.
     public static func cancel(
         _ identifiers: @escaping (ID) -> Bool
-        ) -> Effect<World, Input, Queue, ID>
+        ) -> Effect<Input, Queue, ID>
     {
         return Effect(kinds: [.cancel(identifiers)])
     }
@@ -70,14 +48,14 @@ public struct Effect<World, Input, Queue, ID>
     /// Cancels running `publisher` by specifying `identifier`.
     public static func cancel(
         _ identifier: ID
-        ) -> Effect<World, Input, Queue, ID>
+        ) -> Effect<Input, Queue, ID>
     {
         return Effect(kinds: [.cancel { $0 == identifier }])
     }
 
     // MARK: - Monoid
 
-    public static var empty: Effect<World, Input, Queue, ID>
+    public static var empty: Effect<Input, Queue, ID>
     {
         return Effect()
     }
@@ -89,13 +67,13 @@ public struct Effect<World, Input, Queue, ID>
 
     // MARK: - Functor
 
-    public func mapInput<Input2>(_ f: @escaping (Input) -> Input2) -> Effect<World, Input2, Queue, ID>
+    public func mapInput<Input2>(_ f: @escaping (Input) -> Input2) -> Effect<Input2, Queue, ID>
     {
         .init(kinds: self.kinds.map { kind in
             switch kind {
             case let .task(task):
                 return .task(.init(
-                    publisher: { task.publisher($0).map(f).eraseToAnyPublisher() },
+                    publisher: task.publisher.map(f).eraseToAnyPublisher(),
                     queue: task.queue,
                     id: task.id
                 ))
@@ -106,7 +84,7 @@ public struct Effect<World, Input, Queue, ID>
         })
     }
 
-    public func mapQueue<Queue2>(_ f: @escaping (Queue) -> Queue2) -> Effect<World, Input, Queue2, ID>
+    public func mapQueue<Queue2>(_ f: @escaping (Queue) -> Queue2) -> Effect<Input, Queue2, ID>
     {
         .init(kinds: self.kinds.map { kind in
             switch kind {
@@ -123,27 +101,10 @@ public struct Effect<World, Input, Queue, ID>
         })
     }
 
-    public func contramapWorld<World2>(_ f: @escaping (World2) -> World) -> Effect<World2, Input, Queue, ID>
-    {
-        .init(kinds: self.kinds.map { kind in
-            switch kind {
-            case let .task(task):
-                return .task(.init(
-                    publisher: { task.publisher(f($0)) },
-                    queue: task.queue,
-                    id: task.id
-                ))
-
-            case let .cancel(predicate):
-                return .cancel(predicate)
-            }
-        })
-    }
-
     public func transformID<WholeID>(
         _ inject: @escaping (ID) -> WholeID,
         _ tryGet: @escaping (WholeID) -> ID?
-    ) -> Effect<World, Input, Queue, WholeID>
+    ) -> Effect<Input, Queue, WholeID>
     {
         .init(kinds: self.kinds.map { kind in
             switch kind {
@@ -200,7 +161,7 @@ extension Effect
     internal struct Task
     {
         /// "Cold" stream that runs side-effect and sends next `Input`.
-        internal let publisher: (World) -> AnyPublisher<Input, Never>
+        internal let publisher: AnyPublisher<Input, Never>
 
         /// Effect queue that associates with `publisher` to perform various `flattenStrategy`s.
         internal let queue: Queue
@@ -209,14 +170,40 @@ extension Effect
         internal let id: ID?
 
         internal init<P: Publisher>(
-            publisher: @escaping (World) -> P,
+            publisher: P,
             queue: Queue,
             id: ID? = nil
         ) where P.Output == Input, P.Failure == Never
         {
-            self.publisher = { publisher($0).eraseToAnyPublisher() }
+            self.publisher = publisher.eraseToAnyPublisher()
             self.queue = queue
             self.id = id
         }
+    }
+}
+
+// MARK: - toEffect / toResultEffect
+
+extension Publisher where Failure == Never
+{
+    public func toEffect<Queue, ID>(
+        queue: Queue = .defaultEffectQueue,
+        id: ID? = nil
+    ) -> Effect<Output, Queue, ID>
+    {
+        Effect(self, queue: queue, id: id)
+    }
+}
+
+extension Publisher
+{
+    public func toResultEffect<Queue, ID>(
+        queue: Queue = .defaultEffectQueue,
+        id: ID? = nil
+    ) -> Effect<Result<Output, Failure>, Queue, ID>
+    {
+        self.map(Result.success)
+            .catch { Just(.failure($0)) }
+            .toEffect(queue: queue, id: id)
     }
 }
