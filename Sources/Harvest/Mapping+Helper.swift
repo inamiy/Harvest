@@ -103,6 +103,21 @@ public func | <World, Input, State, Queue, EffectID>(
     }
 }
 
+public func | <World, Input, State, Queue, EffectID>(
+    mapping: Harvester<Input, State>.Mapping,
+    effect: @escaping (World) -> Effect<Input, Queue, EffectID>
+) -> Harvester<Input, State>.EffectMapping<World, Queue, EffectID>
+{
+    return .init { input, fromState, world in
+        if let toState = mapping.run(input, fromState) {
+            return (toState, effect(world))
+        }
+        else {
+            return nil
+        }
+    }
+}
+
 // MARK: Functions
 
 /// Helper for "any state" or "any input" mappings, e.g.
