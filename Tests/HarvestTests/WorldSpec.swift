@@ -34,14 +34,12 @@ class WorldSpec: QuickSpec
             beforeEach {
                 let world = World(date: { mockedDate })
 
-                let mapping: EffectMapping = .makeInout { input, state in
+                let mapping: EffectMapping = .makeInout { input, state, world in
                     switch input {
                     case .getDate:
-                        return Effect { world in
-                            Deferred { Just(world.date()) }
-                                .map(Input._didGetDate)
-                                .eraseToAnyPublisher()
-                        }
+                        return Deferred { Just(world.date()) }
+                            .map(Input._didGetDate)
+                            .toEffect()
 
                     case let ._didGetDate(date):
                         state = date.timeIntervalSince1970

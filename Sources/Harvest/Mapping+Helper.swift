@@ -90,10 +90,10 @@ public func | <World, P: Publisher, Input, State, Queue, EffectID>(
 
 public func | <World, Input, State, Queue, EffectID>(
     mapping: Harvester<Input, State>.Mapping,
-    effect: Effect<World, Input, Queue, EffectID>
+    effect: Effect<Input, Queue, EffectID>
     ) -> Harvester<Input, State>.EffectMapping<World, Queue, EffectID>
 {
-    return .init { input, fromState in
+    return .init { input, fromState, world in
         if let toState = mapping.run(input, fromState) {
             return (toState, effect)
         }

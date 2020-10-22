@@ -114,7 +114,7 @@ class EffectMappingSpec: QuickSpec
                         .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
-                let mapping: EffectMapping = .init { input, fromState in
+                let mapping: EffectMapping = .init { input, fromState, world in
                     switch (fromState, input) {
                         case (.loggedOut, .login):
                             return (.loggingIn, .init(loginOKPublisher))
@@ -196,7 +196,7 @@ class EffectMappingSpec: QuickSpec
                         .delay(for: 1, scheduler: testScheduler)
                         .eraseToAnyPublisher()
 
-                let mapping: EffectMapping = .makeInout { input, state in
+                let mapping: EffectMapping = .makeInout { input, state, world in
                     switch (state, input) {
                     case (.loggedOut, .login):
                         state = .loggingIn

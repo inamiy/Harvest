@@ -41,7 +41,7 @@ extension Harvester
         /// Converts `Mapping` to `EffectMapping`.
         public func toEffectMapping<World, Queue, EffectID>() -> EffectMapping<World, Queue, EffectID>
         {
-            .init { input, state in
+            .init { input, state, world in
                 if let toState = self.run(input, state) {
                     return (toState, .empty)
                 }
@@ -153,24 +153,26 @@ extension Harvester
     /// Transducer (input & output) mapping with
     /// **cold publisher** (additional effect) as output,
     /// which may emit next input values for continuous state-transitions.
+    ///
+    /// - Note: Set `World = Void` if not interested in dependency injection.
     public struct EffectMapping<World, Queue, EffectID>
         where Queue: EffectQueueProtocol, EffectID: Equatable
     {
-        public let run: (Input, State) -> (State, Effect<World, Input, Queue, EffectID>)?
+        public let run: (Input, State, World) -> (State, Effect<Input, Queue, EffectID>)?
 
-        public init(_ run: @escaping (Input, State) -> (State, Effect<World, Input, Queue, EffectID>)?)
+        public init(_ run: @escaping (Input, State, World) -> (State, Effect<Input, Queue, EffectID>)?)
         {
             self.run = run
         }
 
         /// `inout`-function initializer.
         /// - Note: Added different name than `init` to disambiguate.
-        public static func makeInout(_ run: @escaping (Input, inout State) -> Effect<World, Input, Queue, EffectID>?)
+        public static func makeInout(_ run: @escaping (Input, inout State, World) -> Effect<Input, Queue, EffectID>?)
             -> EffectMapping<World, Queue, EffectID>
         {
-            return .init { input, state in
+            return .init { input, state, world in
                 var state = state
-                if let effect = run(input, &state) {
+                if let effect = run(input, &state, world) {
                     return (state, effect)
                 }
                 else {
@@ -183,26 +185,26 @@ extension Harvester
 
         public static var zero: EffectMapping
         {
-            .init { input, state in nil }
+            .init { input, state, world in nil }
         }
 
         public static var one: EffectMapping
         {
-            .init { input, state in (state, .empty) }
+            .init { input, state, world in (state, .empty) }
         }
 
         public static func + (l: EffectMapping, r: EffectMapping) -> EffectMapping
         {
-            .init { input, state in
-                l.run(input, state) ?? r.run(input, state)
+            .init { input, state, world in
+                l.run(input, state, world) ?? r.run(input, state, world)
             }
         }
 
         public static func * (l: EffectMapping, r: EffectMapping) -> EffectMapping
         {
-            .init { input, state in
-                l.run(input, state).flatMap { state2, effect in
-                    r.run(input, state2).map { state3, effect2 in
+            .init { input, state, world in
+                l.run(input, state, world).flatMap { state2, effect in
+                    r.run(input, state2, world).map { state3, effect2 in
                         (state3, effect + effect2)
                     }
                 }
@@ -214,8 +216,8 @@ extension Harvester
         public func mapQueue<Queue2>(_ f: @escaping (Queue) -> Queue2)
             -> EffectMapping<World, Queue2, EffectID>
         {
-            return .init { input, state in
-                guard let (newState, effect) = self.run(input, state) else { return nil }
+            .init { input, state, world in
+                guard let (newState, effect) = self.run(input, state, world) else { return nil }
                 let effect2 = effect.mapQueue(f)
                 return (newState, effect2)
             }
@@ -224,10 +226,8 @@ extension Harvester
         public func contramapWorld<World2>(_ f: @escaping (World2) -> World)
             -> EffectMapping<World2, Queue, EffectID>
         {
-            return .init { input, state in
-                guard let (newState, effect) = self.run(input, state) else { return nil }
-                let effect2 = effect.contramapWorld(f)
-                return (newState, effect2)
+            .init { input, state, world in
+                self.run(input, state, f(world))
             }
         }
 
@@ -281,13 +281,13 @@ extension Harvester
                     // Comment-Out: Need to track all transition failures.
                     //mappings.reduce(into: .one, { $0 = $0 * ($1 + .one) })
 
-                    EffectMapping { input, state in
+                    EffectMapping { input, state, world in
                         var state = state
-                        var effect = Effect<World, Input, Queue, EffectID>.empty
+                        var effect = Effect<Input, Queue, EffectID>.empty
                         var isTransitionSucceeded = false
 
                         for mapping in mappings {
-                            if let (newState, newEffect) = mapping.run(input, state) {
+                            if let (newState, newEffect) = mapping.run(input, state, world) {
                                 state = newState
                                 effect = effect + newEffect
                                 isTransitionSucceeded = true

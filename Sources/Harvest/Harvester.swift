@@ -31,7 +31,9 @@ public final class Harvester<Input, State>
         self.init(
             state: initialState,
             inputs: inputs,
-            mapping: .init { mapping.run($0, $1).map { ($0, Effect<Void, Input, BasicEffectQueue, Never>.empty) } },
+            mapping: EffectMapping { input, state, world in
+                mapping.run(input, state).map { ($0, Effect<Input, BasicEffectQueue, Never>.empty) }
+            },
             world: (),
             scheduler: scheduler,
             options: options
@@ -50,7 +52,7 @@ public final class Harvester<Input, State>
     ///   - options: `scheduler` options.
     public convenience init<World, Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
-        effect initialEffect: Effect<World, Input, Queue, EffectID> = .empty,
+        effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
         inputs: Inputs,
         mapping: EffectMapping<World, Queue, EffectID>,
         world: World,
@@ -65,7 +67,7 @@ public final class Harvester<Input, State>
             makePublishers: { from -> RepliesAndEffects in
                 let mapped = from
                     .map { input, fromState in
-                        return (input, fromState, mapping.run(input, fromState))
+                        return (input, fromState, mapping.run(input, fromState, world))
                     }
                     .share()
 
@@ -81,7 +83,7 @@ public final class Harvester<Input, State>
                     .eraseToAnyPublisher()
 
                 let effects = mapped
-                    .compactMap { _, _, mapped -> Effect<World, Input, Queue, EffectID> in
+                    .compactMap { _, _, mapped -> Effect<Input, Queue, EffectID> in
                         guard let (_, effect) = mapped else { return .empty }
                         return effect
                     }
@@ -100,14 +102,14 @@ public final class Harvester<Input, State>
                             .filter { $0.queue == queue }
                             .flatMap(queue.flattenStrategy) { task -> AnyPublisher<Input, Never> in
                                 guard let publisherID = task.id else {
-                                    return task.publisher(world)
+                                    return task.publisher
                                 }
 
                                 let until = cancels
                                     .filter { $0(publisherID) }
                                     .map { _ in }
 
-                                return task.publisher(world)
+                                return task.publisher
                                     .prefix(untilOutputFrom: until)
                                     .eraseToAnyPublisher()
                             }
@@ -213,7 +215,7 @@ extension Harvester
 {
     public convenience init<Inputs: Publisher, Queue: EffectQueueProtocol, EffectID, S: Scheduler>(
         state initialState: State,
-        effect initialEffect: Effect<Void, Input, Queue, EffectID> = .empty,
+        effect initialEffect: Effect<Input, Queue, EffectID> = .empty,
         inputs: Inputs,
         mapping: EffectMapping<Void, Queue, EffectID>,
         scheduler: S,
