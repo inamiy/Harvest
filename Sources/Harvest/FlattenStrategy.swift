@@ -1,4 +1,5 @@
 import Combine
+import Dispatch
 
 /// Describes how a stream of inner streams should be flattened into a stream of values.
 /// - SeeAlso: https://github.com/ReactiveCocoa/ReactiveSwift/blob/6.0.0/Sources/Flatten.swift
@@ -20,6 +21,16 @@ public struct FlattenStrategy
     }
 
     public static let latest = FlattenStrategy(kind: .latest)
+
+    public static func throttle(interval: Double /* seconds */, latest: Bool) -> FlattenStrategy
+    {
+        return FlattenStrategy(kind: .throttle(interval: interval, latest: latest))
+    }
+
+    public static func debounce(time: Double /* seconds */) -> FlattenStrategy
+    {
+        return FlattenStrategy(kind: .debounce(time: time))
+    }
 }
 
 // MARK: - FlattenStrategy.Kind
@@ -30,6 +41,8 @@ extension FlattenStrategy
     {
         case concurrent(maxPublishers: Subscribers.Demand)
         case latest
+        case throttle(interval: Double /* seconds */, latest: Bool)
+        case debounce(time: Double /* seconds */)
     }
 }
 
@@ -74,10 +87,25 @@ extension Publishers
                 self.upstream
                     .flatMap(maxPublishers: maxPublishers, self.transform)
                     .receive(subscriber: subscriber)
+
             case .latest:
                 self.upstream
                     .map(self.transform)
                     .switchToLatest()
+                    .receive(subscriber: subscriber)
+
+            case let .throttle(interval, latest):
+                self.upstream
+                    .map(self.transform)
+                    .throttle(for: .seconds(interval), scheduler: DispatchQueue.global(), latest: latest)
+                    .flatMap { $0 }
+                    .receive(subscriber: subscriber)
+
+            case let .debounce(time):
+                self.upstream
+                    .map(self.transform)
+                    .debounce(for: .seconds(time), scheduler: DispatchQueue.global())
+                    .flatMap { $0 }
                     .receive(subscriber: subscriber)
             }
         }
