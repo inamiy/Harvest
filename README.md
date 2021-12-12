@@ -1,3 +1,5 @@
+## NOTE: This repository has been discontinued in favor of [Actomaton](https://github.com/inamiy/Actomaton).
+
 # 🌾 Harvest
 
 [![Swift 5.1](https://img.shields.io/badge/swift-5.1-orange.svg?style=flat)](https://swift.org/download/)
